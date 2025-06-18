@@ -23,14 +23,15 @@ public:
     // Stop the timer
     void stop();
     bool isRunning() const;
+    static void singleShot(int milliseconds, Callback callback);
 
 private:
     cxxtimer::Timer cxxTimer;
-    bool isPeriodic;
     bool isStoped;
     long long durationMs;
-    Callback callback;           // Callback function
-    void check();
+    Callback callback;
+    bool isSingleShot;
+    bool check();
     friend class TimerHandler;
 };
 
@@ -38,6 +39,11 @@ class TimerHandler {
 
 private:
     TimerHandler() = default;
+    TimerHandler(const TimerHandler&) = delete;
+    TimerHandler& operator=(const TimerHandler&) = delete;
+    TimerHandler(TimerHandler&&) = delete;
+    TimerHandler& operator=(TimerHandler&&) = delete;
+
     list<Timer*> timerList;
     std::mutex timerListMutex;
 
