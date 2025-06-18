@@ -48,7 +48,7 @@ private:
     std::mutex timerListMutex;
 
 public:
-    static TimerHandler & getInstance();
+    static TimerHandler & instance();
     void append(Timer* timer);
     void remove(Timer* timer);
     void run();

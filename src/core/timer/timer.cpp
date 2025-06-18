@@ -9,12 +9,12 @@ Managed centrally by TimerHandler.
 Timer::Timer() : isSingleShot{false}, isStoped{true}
 {
     // Push timer in the Timer Handler
-    TimerHandler::getInstance().append(this);
+    TimerHandler::instance().append(this);
 }
 
 Timer::~Timer()
 {
-    TimerHandler::getInstance().remove(this);
+    TimerHandler::instance().remove(this);
 }
 void Timer::start(int milliseconds, Callback callback)
 {
@@ -55,7 +55,7 @@ bool Timer::check()
     return false;
 }
 
-TimerHandler &TimerHandler::getInstance()
+TimerHandler &TimerHandler::instance()
 {
     /*
     Use a local static variable, which is guaranteed to 
