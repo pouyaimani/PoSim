@@ -67,14 +67,14 @@ TimerHandler &TimerHandler::instance()
 
 void TimerHandler::append(Timer* timer) noexcept
 {
-    std::lock_guard<std::mutex> lock(timerListMutex);
+    std::lock_guard<std::recursive_mutex> lock(timerListMutex);
     // Push timer in the timerList
     timerList.push_back(timer);
 }
 
 void TimerHandler::remove(Timer* timer) noexcept
 {
-    std::lock_guard<std::mutex> lock(timerListMutex);
+    std::lock_guard<std::recursive_mutex> lock(timerListMutex);
     auto it = std::find(timerList.begin(), timerList.end(), timer);
     if (it != timerList.end()) {
         // Remove the timer pointer from the timerList
@@ -84,11 +84,12 @@ void TimerHandler::remove(Timer* timer) noexcept
 
 void TimerHandler::run() noexcept
 {
-    std::unique_lock<std::mutex> lock(timerListMutex);
+    std::unique_lock<std::recursive_mutex> lock(timerListMutex);
     for (auto it = timerList.begin() ; it != timerList.end();) {
         auto& timer = *it;
         ++it;
         if (timer->check() && timer->isSingleShot) {
+            // Delete memory of single shot timer.
             lock.unlock();
             delete timer;
             lock.lock();    

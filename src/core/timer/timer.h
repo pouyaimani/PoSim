@@ -45,7 +45,7 @@ private:
     TimerHandler& operator=(TimerHandler&&) = delete;
 
     list<Timer*> timerList;
-    std::mutex timerListMutex;
+    std::recursive_mutex timerListMutex;
 
 public:
     static TimerHandler & instance();
