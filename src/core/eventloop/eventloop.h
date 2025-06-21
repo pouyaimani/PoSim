@@ -37,10 +37,10 @@ public:
     static EventLoop& instance();
 
     void exec();
-    void stop();
+    void stop() noexcept;
 
-    void registerCallback(Callback cb);
-    void unregisterAll();
+    void registerCallback(Callback cb) noexcept;
+    void unregisterAll() noexcept;
 
 private:
     EventLoop() = default;
