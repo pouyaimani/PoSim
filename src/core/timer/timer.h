@@ -18,11 +18,11 @@ public:
     ~Timer();
 
     // Start the timer with a delay in milliseconds and a callback function
-    void start(int milliseconds, Callback callback);
+    void start(int milliseconds, Callback callback) noexcept;
 
     // Stop the timer
-    void stop();
-    bool isRunning() const;
+    void stop() noexcept;
+    bool isRunning() const noexcept;
     static void singleShot(int milliseconds, Callback callback);
 
 private:
@@ -49,9 +49,9 @@ private:
 
 public:
     static TimerHandler & instance();
-    void append(Timer* timer);
-    void remove(Timer* timer);
-    void run();
+    void append(Timer* timer) noexcept;
+    void remove(Timer* timer) noexcept;
+    void run() noexcept;
 };
 
 #endif

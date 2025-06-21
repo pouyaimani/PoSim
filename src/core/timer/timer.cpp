@@ -16,7 +16,7 @@ Timer::~Timer()
 {
     TimerHandler::instance().remove(this);
 }
-void Timer::start(int milliseconds, Callback callback)
+void Timer::start(int milliseconds, Callback callback) noexcept
 {
     isStoped = false;
     durationMs = milliseconds;
@@ -27,12 +27,12 @@ void Timer::start(int milliseconds, Callback callback)
     this->callback = std::move(callback);
 }
 
-void Timer::stop()
+void Timer::stop() noexcept
 {
     isStoped = true;
 }
 
-bool Timer::isRunning() const
+bool Timer::isRunning() const noexcept
 {
     return (isStoped == false);
 }
@@ -65,14 +65,14 @@ TimerHandler &TimerHandler::instance()
     return instance;
 }
 
-void TimerHandler::append(Timer* timer)
+void TimerHandler::append(Timer* timer) noexcept
 {
     std::lock_guard<std::mutex> lock(timerListMutex);
     // Push timer in the timerList
     timerList.push_back(timer);
 }
 
-void TimerHandler::remove(Timer* timer)
+void TimerHandler::remove(Timer* timer) noexcept
 {
     std::lock_guard<std::mutex> lock(timerListMutex);
     auto it = std::find(timerList.begin(), timerList.end(), timer);
@@ -82,7 +82,7 @@ void TimerHandler::remove(Timer* timer)
     }
 }
 
-void TimerHandler::run()
+void TimerHandler::run() noexcept
 {
     std::unique_lock<std::mutex> lock(timerListMutex);
     for (auto it = timerList.begin() ; it != timerList.end();) {
