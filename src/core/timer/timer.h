@@ -27,10 +27,10 @@ public:
 
 private:
     cxxtimer::Timer cxxTimer;
-    bool isStoped;
+    bool isStoped {true};
     long long durationMs;
     Callback callback;
-    bool isSingleShot;
+    bool isSingleShot {false};
     bool check();
     friend class TimerHandler;
 };

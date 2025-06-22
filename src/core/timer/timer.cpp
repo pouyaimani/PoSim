@@ -6,7 +6,7 @@ A single-use or periodic timer that triggers a callback after a set duration.
 Managed centrally by TimerHandler.
 */
 
-Timer::Timer() : isSingleShot{false}, isStoped{true}
+Timer::Timer()
 {
     // Push timer in the Timer Handler
     TimerHandler::instance().append(this);
