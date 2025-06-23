@@ -8,33 +8,30 @@ EventLoop& EventLoop::instance()
     return instance;
 }
 
-void EventLoop::exec()
+void EventLoop::runCycle()
 {
-    running = true;
-    while (running) {
-        {
-            std::lock_guard<std::mutex> lock(cbMutex);
-            for (auto& cb : callbacks) {
-                cb();  // Call each registered callback
-            }
+    {
+        std::lock_guard<std::recursive_mutex> lock(chMutex);
+        for (auto& ch : checkers) {
+            ch();  // Call each registered callback
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // loop interval
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // loop interval
 }
 
-void EventLoop::stop()
+void EventLoop::stop() noexcept
 {
     running = false;
 }
 
-void EventLoop::registerCallback(Callback cb)
+void EventLoop::registerChecker(Checker ch) noexcept
 {
-    std::lock_guard<std::mutex> lock(cbMutex);
-    callbacks.push_back(std::move(cb));
+    std::lock_guard<std::recursive_mutex> lock(chMutex);
+    checkers.push_back(std::move(ch));
 }
 
-void EventLoop::unregisterAll()
+void EventLoop::unregisterAll() noexcept
 {
-    std::lock_guard<std::mutex> lock(cbMutex);
-    callbacks.clear();
+    std::lock_guard<std::recursive_mutex> lock(chMutex);
+    checkers.clear();
 }

@@ -32,21 +32,21 @@
 
 class EventLoop {
 public:
-    using Callback = std::function<void()>;
+    using Checker = std::function<void()>;
 
     static EventLoop& instance();
 
-    void exec();
+    void runCycle();
     void stop() noexcept;
 
-    void registerCallback(Callback cb) noexcept;
+    void registerChecker(Checker) noexcept;
     void unregisterAll() noexcept;
 
 private:
     EventLoop() = default;
     std::atomic<bool> running{false};
-    std::vector<Callback> callbacks;
-    std::mutex cbMutex;
+    std::vector<Checker> checkers;
+    std::recursive_mutex chMutex;
 };
 
 #endif
