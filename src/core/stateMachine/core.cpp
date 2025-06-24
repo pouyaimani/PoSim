@@ -26,9 +26,33 @@ void Core::exec()
 {
     while (true) {
         runCycle();
-        std::lock_guard<std::recursive_mutex> lock(cbMtc);
-        for (auto& ch : callback) {
-            ch();  // Call each registered callback
+        /*
+         * Copy callbacks then run them cause calling external 
+         * functions (like cb()) while holding a mutex can lead to:
+         * 
+         * 1- Deadlocks: If a callback tries to:
+         * Acquire the same cbMtc mutex again (e.g. it calls registerCb()),
+         * or acquire another mutex that's being held elsewhere in the system,
+         * you risk a deadlock.
+         * 
+         * 2- Reduced Concurrency
+         * holding a mutex during the execution of arbitrary callbacks:
+         * blocks other threads that want to register or update callbacks.
+         * makes the callback system a performance bottleneck, especially if callbacks are long-running.
+         * 
+         * 3- Unclear Ownership and Debugging
+         * it's hard to trace where a lock is being held.
+         * errors or exceptions thrown inside cb() may leave the mutex in an inconsistent 
+         * state (in older C++ versions without RAII or on custom mutex wrappers).
+        */
+        std::vector<Callback> cbs;
+        {
+            std::lock_guard<std::recursive_mutex> lock(cbMtc);
+            cbs = callback; // safely copy the list
+        }
+
+        for (auto& cb : cbs) {
+            cb();  // call without holding the lock
         }
     }
 }
