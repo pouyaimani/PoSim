@@ -11,8 +11,12 @@ namespace StateMachine
     class Core {
     using Callback = std::function<void()>;
     public:
+        // Make Core Class Non-Copyable
+        Core() = default;
+        Core(const Core&) = delete;
+        Core& operator=(const Core&) = delete;
         static Core &instance();
-        void init(State *state);
+        void init(State *state) noexcept;
         void exec();
         void runCycle();
         void registerCb(Callback cb) noexcept;
