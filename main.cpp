@@ -5,7 +5,6 @@
 #include <plog/Initializers/ConsoleInitializer.h>
 #include "src/core/timer/timer.h"
 #include "src/core/eventloop/eventloop.h"
-#include "src/test/test.h"
 #include "src/core/stateMachine/event.h"
 #include "src/core/stateMachine/core.h"
 #include "src/states/startup.h"
