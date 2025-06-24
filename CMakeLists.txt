@@ -7,10 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Include directories
 include_directories(include)
 
-# Source files
-file(GLOB_RECURSE SOURCES "src/*.cpp")
+add_subdirectory(src)
 
-add_executable(posim ${SOURCES})
+add_executable(posim main.cpp)
 
-# You can link LVGL and other dependencies here later
-# target_link_libraries(posim lvgl ...)
+target_link_libraries(posim PUBLIC libSrc)

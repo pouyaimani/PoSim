@@ -19,17 +19,16 @@ Perfect for embedded system developers or anyone interested in building a paymen
 ```
 PoSim/
 ├── src/
-│   ├── main.cpp
+│   ├── core/
 │   ├── gui/
-│   ├── controller/
-│   └── core/
+│   └── states/
 ├── include/
-│   ├── gui/
-│   ├── controller/
-│   └── core/
+│   ├── plog/
+│   └── cxxtimer.h
 ├── assets/
 ├── test/
 ├── CMakeLists.txt
+├── main.cpp
 └── README.md
 ```
 
