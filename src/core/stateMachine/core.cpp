@@ -18,7 +18,7 @@ void Core::init(State *state)
 
 void Core::registerCb(Callback cb) noexcept
 {
-    std::lock_guard<std::recursive_mutex> lock(cbMtc);
+    std::lock_guard<std::mutex> lock(cbMtc);
     callback.push_back(std::move(cb));
 }
 
@@ -47,7 +47,7 @@ void Core::exec()
         */
         std::vector<Callback> cbs;
         {
-            std::lock_guard<std::recursive_mutex> lock(cbMtc);
+            std::lock_guard<std::mutex> lock(cbMtc);
             cbs = callback; // safely copy the list
         }
 
@@ -60,7 +60,7 @@ void Core::exec()
 void Core::raiseEvent(std::unique_ptr<Events::Event> ev)
 {
     ev->targetState = ev->targetState == nullptr ? currentState : ev->targetState;
-    std::lock_guard<std::recursive_mutex> lock(qmtx);
+    std::lock_guard<std::mutex> lock(qmtx);
     evq.push_back(std::move(ev));
     auto it = evq.begin();
 }
@@ -84,7 +84,7 @@ void Core::runCycle()
 
 void Core::checkEvents()
 {
-    std::lock_guard<std::recursive_mutex> lock(qmtx);
+    std::lock_guard<std::mutex> lock(qmtx);
     for (auto it = evq.begin() ; it != evq.end();) {
         if ((*it)->targetState == currentState) {
             (*it)->dispatchTo(currentState);
@@ -101,16 +101,16 @@ void Core::goTo(State *state)
     nextState = state;
 }
 
-void Core::doEntryTask()
+void Core::onEntry()
 {
     currentState->enter();
-    currentState->innerState = State::InnerState::HANDLE_EVENT;
+    currentState->innerState = State::InnerState::EVENT;
 }
 
-void Core::doExitTask()
+void Core::onExit()
 {
     currentState->exit();
-    std::lock_guard<std::recursive_mutex> lock(qmtx);
+    std::lock_guard<std::mutex> lock(qmtx);
     evq.erase(std::remove_if(evq.begin(), evq.end(), [this](std::unique_ptr<Events::Event> &ev) {
         return ev->targetState == this->currentState;
     }), evq.end());

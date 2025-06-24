@@ -27,8 +27,8 @@ namespace StateMachine
         State *currentState;
         State *nextState;
         std::vector<std::unique_ptr<Events::Event>> evq;
-        std::recursive_mutex qmtx;
-        std::recursive_mutex cbMtc;
+        std::mutex qmtx;
+        std::mutex cbMtc;
         std::vector<Callback> callback;
         void raiseEvent(std::unique_ptr<Events::Event> ev);
         void goTo(State *state);
