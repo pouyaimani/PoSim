@@ -32,9 +32,9 @@ namespace StateMachine
         std::vector<Callback> callback;
         void raiseEvent(std::unique_ptr<Events::Event> ev);
         void goTo(State *state);
-        void doExitTask();
-        void doEntryTask();
-        void checkEvents();
+        void onExit();
+        void onEntry();
+        void onEvent();
     };
 }
 

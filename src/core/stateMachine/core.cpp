@@ -10,7 +10,10 @@ Core &Core::instance()
     return instance;
 }
 
-void Core::init(State *state)
+/* Initializes the state machine with an initial state.
+ * Should be called once before exec().
+ */
+void Core::init(State *state) noexcept
 {
     currentState = state;
     currentState->innerState = State::InnerState::ENTRY;
@@ -62,27 +65,26 @@ void Core::raiseEvent(std::unique_ptr<Events::Event> ev)
     ev->targetState = ev->targetState == nullptr ? currentState : ev->targetState;
     std::lock_guard<std::mutex> lock(qmtx);
     evq.push_back(std::move(ev));
-    auto it = evq.begin();
 }
 
 void Core::runCycle()
 {
     switch (currentState->innerState) {
     case State::InnerState::ENTRY:
-        doEntryTask();
+        onEntry();
         break;
-    case State::InnerState::HANDLE_EVENT:
-        checkEvents();
+    case State::InnerState::EVENT:
+        onEvent();
         break;
     case State::InnerState::EXIT:
-        doExitTask();
+        onExit();
         break;
     default:
         break;
     }
 }
 
-void Core::checkEvents()
+void Core::onEvent()
 {
     std::lock_guard<std::mutex> lock(qmtx);
     for (auto it = evq.begin() ; it != evq.end();) {

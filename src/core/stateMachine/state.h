@@ -21,7 +21,7 @@ namespace StateMachine
         State(State *parent, const char *name);
         enum class InnerState {
             ENTRY,
-            HANDLE_EVENT,
+            EVENT,
             EXIT
         };
         virtual void enter();
