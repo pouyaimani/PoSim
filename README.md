@@ -34,6 +34,45 @@ PoSim/
 
 ---
 
+## Architecture Overview
+
+### Event Loop
+
+The `EventLoop` class acts as a central processor for **system-level asynchronous events**.  
+It continuously pulls from a queue of registered *event sources* (as `std::function<void()>`) and checks for hardware or logical events such as:
+
+- Keypad presses
+- Timer timeouts
+- Touch events
+
+When an event is detected, it gets pushed to the **StateMachine's Event Queue** for handling.
+
+### State Machine
+
+The core application logic is managed by a **finite state machine (FSM)**.  
+Each screen or interaction phase is modeled as a `State` class with the following methods:
+
+- `entry()` – called when entering the state (e.g., render keypad)
+- `handle(Event)` – processes events while in the state
+- `exit()` – called before transitioning to a new state
+
+### Event Flow
+
+```
++-------------+        push        +-----------------+        dispatch       +------------------+
+| Any source  |  ───────────────▶  |   Event Queue   |  ─────────────────▶   | Current State    |
+| (GUI, IO)   |                    +-----------------+                       | handle(event) |
++-------------+                                                              +------------------+
+```
+
+### Benefits
+
+- Fully decoupled components
+- Cleanly testable states and event logic
+- Easy to extend: just add new states or event types
+
+---
+
 ## Build Instructions
 
 ```bash
