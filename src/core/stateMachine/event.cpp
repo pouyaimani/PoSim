@@ -6,9 +6,9 @@
 using namespace StateMachine;
 using namespace Events;
 
-void Events::Event::dispatch(State *state)
+void Events::Event::dispatch(StateShPtr state)
 {
-    auto ev = std::unique_ptr<Events::Event>(clone());
+    auto ev = EvUnqPtr(clone());
     ev->targetState = state;
     Core::instance().raiseEvent(std::move(ev));
 }

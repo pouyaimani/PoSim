@@ -10,7 +10,7 @@ using namespace StateMachine;
 
 class StartUp : public State {
 public:
-    StartUp(State *parent) : State(parent, "startUp") {}
+    StartUp(StateShPtr parent) : State(parent, "startUp") {}
     void enter() override {
         PLOG_DEBUG << "startup enter()";
         Timer::singleShot(2000, []() {

@@ -13,15 +13,17 @@ Core &Core::instance()
 /* Initializes the state machine with an initial state.
  * Should be called once before exec().
  */
-void Core::init(State *state) noexcept
+void Core::init(StateShPtr state) noexcept
 {
     currentState = state;
-    currentState->innerState = State::InnerState::ENTRY;
+    if (auto locked = currentState.lock()) {
+        locked->innerState = State::InnerState::ENTRY;
+    }
 }
 
 void Core::registerCb(Callback cb) noexcept
 {
-    std::lock_guard<std::mutex> lock(cbMtc);
+    LockGuard lock(cbMtc);
     callback.push_back(std::move(cb));
 }
 
@@ -50,7 +52,7 @@ void Core::exec()
         */
         std::vector<Callback> cbs;
         {
-            std::lock_guard<std::mutex> lock(cbMtc);
+            LockGuard lock(cbMtc);
             cbs = callback; // safely copy the list
         }
 
@@ -60,62 +62,72 @@ void Core::exec()
     }
 }
 
-void Core::raiseEvent(std::unique_ptr<Events::Event> ev)
+void Core::raiseEvent(EvUnqPtr ev)
 {
-    ev->targetState = ev->targetState == nullptr ? currentState : ev->targetState;
-    std::lock_guard<std::mutex> lock(qmtx);
+    if (ev->targetState.expired()) {
+        ev->targetState = currentState;
+    }
+    LockGuard lock(qmtx);
     evq.push_back(std::move(ev));
 }
 
 void Core::runCycle()
 {
-    switch (currentState->innerState) {
-    case State::InnerState::ENTRY:
-        onEntry();
-        break;
-    case State::InnerState::EVENT:
-        onEvent();
-        break;
-    case State::InnerState::EXIT:
-        onExit();
-        break;
-    default:
-        break;
+    if (auto locked = currentState.lock()) {
+        switch (locked->innerState) {
+            case State::InnerState::ENTRY:
+                onEntry();
+                break;
+            case State::InnerState::EVENT:
+                onEvent();
+                break;
+            case State::InnerState::EXIT:
+                onExit();
+                break;
+            default:
+                break;
+        }
     }
 }
 
 void Core::onEvent()
 {
-    std::lock_guard<std::mutex> lock(qmtx);
+    LockGuard lock(qmtx);
     for (auto it = evq.begin() ; it != evq.end();) {
-        if ((*it)->targetState == currentState) {
-            (*it)->dispatchTo(currentState);
+        if (auto target = (*it)->targetState.lock(); target == currentState.lock()) {
+            (*it)->dispatchTo(target);
             it = evq.erase(it);
         } else {
-            it++;
+            ++it;
         }
     }
 }
 
-void Core::goTo(State *state)
+void Core::goTo(StateShPtr state)
 {
-    currentState->innerState = State::InnerState::EXIT;
-    nextState = state;
+    if (auto lock = currentState.lock()) {
+        lock->innerState = State::InnerState::EXIT;
+        nextState = state;
+    }
 }
 
 void Core::onEntry()
 {
-    currentState->enter();
-    currentState->innerState = State::InnerState::EVENT;
+    if (auto state = currentState.lock()) {
+        state->enter();
+        state->innerState = State::InnerState::EVENT;
+    }
 }
 
 void Core::onExit()
 {
-    currentState->exit();
-    std::lock_guard<std::mutex> lock(qmtx);
-    evq.erase(std::remove_if(evq.begin(), evq.end(), [this](std::unique_ptr<Events::Event> &ev) {
-        return ev->targetState == this->currentState;
+    currentState.lock()->exit();
+    LockGuard lock(qmtx);
+    evq.erase(std::remove_if(evq.begin(), evq.end(), [this](EvUnqPtr &ev) {
+        return ev->targetState.lock() == this->currentState.lock();
     }), evq.end());
-    currentState->innerState = State::InnerState::ENTRY;
-    currentState = nextState;
+    currentState.lock()->innerState = State::InnerState::ENTRY;
+    if (auto next = nextState.lock()) {
+        currentState = next;
+    }
 }

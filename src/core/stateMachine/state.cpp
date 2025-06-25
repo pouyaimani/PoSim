@@ -4,8 +4,9 @@
 
 using namespace StateMachine;
 
-State::State(State *parent, const char *name)
+State::State(StateShPtr parent, const char *name)
 {
+    this->parent = parent;
     this->name = name;
 }
 
@@ -19,9 +20,9 @@ void State::exit()
     PLOG_INFO << name << " state exit method is not defined.";
 }
 
-void State::goTo(State *nextState)
+void State::goTo(StateShPtr state)
 {
-    Core::instance().goTo(nextState);
+    Core::instance().goTo(state);
 }
 
 void State::handle(Events::TimeOut &ev)
