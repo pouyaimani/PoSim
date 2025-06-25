@@ -13,24 +13,24 @@ namespace StateMachine
     class Core;
 namespace Events
 {
-
     class Event {
     public:
-        Event(State *targetState = CURRENT_STATE) {
+        DEFINE_ALIASES
+        Event(StateShPtr targetState = CURRENT_STATE) {
             this->targetState = targetState;
         }
         virtual ~Event() = default;
-        void dispatch(State *state = nullptr);
+        void dispatch(StateShPtr state = nullptr);
         friend class StateMachine::Core;
 
     private:
-        State *targetState;
-        virtual void dispatchTo(State *state) = 0;
+        StateWkPtr targetState;
+        virtual void dispatchTo(StateShPtr) = 0;
         virtual Event * clone() = 0;
     
     protected:
         template<class T>
-        void passToState(T &t, State* state) {
+        void passToState(T &t, StateShPtr state) {
             state->handle(t);
         }
     };
@@ -39,7 +39,7 @@ namespace Events
     public:
         TimeOut() {}
     private:
-        void dispatchTo(State *state) override {
+        void dispatchTo(StateShPtr state) override {
             passToState(*this, state);
         }
 

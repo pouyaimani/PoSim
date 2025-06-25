@@ -8,15 +8,16 @@
 
 namespace StateMachine 
 {
-    class Core {
     using Callback = std::function<void()>;
+    class Core {
+        DEFINE_ALIASES
     public:
         // Make Core Class Non-Copyable
         Core() = default;
         Core(const Core&) = delete;
         Core& operator=(const Core&) = delete;
         static Core &instance();
-        void init(State *state) noexcept;
+        void init(StateShPtr state) noexcept;
         void exec();
         void runCycle();
         void registerCb(Callback cb) noexcept;
@@ -24,14 +25,14 @@ namespace StateMachine
         friend class State;
 
     private:
-        State *currentState;
-        State *nextState;
-        std::vector<std::unique_ptr<Events::Event>> evq;
+        StateWkPtr currentState;
+        StateWkPtr nextState;
+        std::vector<EvUnqPtr> evq;
         std::mutex qmtx;
         std::mutex cbMtc;
         std::vector<Callback> callback;
-        void raiseEvent(std::unique_ptr<Events::Event> ev);
-        void goTo(State *state);
+        void raiseEvent(EvUnqPtr ev);
+        void goTo(StateShPtr);
         void onExit();
         void onEntry();
         void onEvent();
