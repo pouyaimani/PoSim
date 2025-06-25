@@ -15,6 +15,7 @@ Core &Core::instance()
  */
 void Core::init(StateShPtr state) noexcept
 {
+    PLOG_INFO << "Core::init called.";
     currentState = state;
     if (auto locked = currentState.lock()) {
         locked->innerState = State::InnerState::ENTRY;
@@ -23,12 +24,14 @@ void Core::init(StateShPtr state) noexcept
 
 void Core::registerCb(Callback cb) noexcept
 {
+    PLOG_INFO << "Core::registerCb called.";
     LockGuard lock(cbMtc);
     callback.push_back(std::move(cb));
 }
 
 void Core::exec()
 {
+    PLOG_INFO << "Core::exec started.";
     while (true) {
         runCycle();
         /*
@@ -64,6 +67,7 @@ void Core::exec()
 
 void Core::raiseEvent(EvUnqPtr ev)
 {
+    PLOG_INFO << "Core::raiseEvent called.";
     if (ev->targetState.expired()) {
         ev->targetState = currentState;
     }
@@ -92,9 +96,11 @@ void Core::runCycle()
 
 void Core::onEvent()
 {
+    PLOG_INFO << "Core::onEvent called.";
     LockGuard lock(qmtx);
     for (auto it = evq.begin() ; it != evq.end();) {
         if (auto target = (*it)->targetState.lock(); target == currentState.lock()) {
+            PLOG_INFO << "Core::onEvent() -> event come to " << target->getName() << " state.";
             (*it)->dispatchTo(target);
             it = evq.erase(it);
         } else {
@@ -105,6 +111,7 @@ void Core::onEvent()
 
 void Core::goTo(StateShPtr state)
 {
+    PLOG_INFO << "Core::goTo called.";
     if (auto lock = currentState.lock()) {
         lock->innerState = State::InnerState::EXIT;
         nextState = state;
@@ -113,7 +120,9 @@ void Core::goTo(StateShPtr state)
 
 void Core::onEntry()
 {
+    PLOG_INFO << "Core::onEntry called.";
     if (auto state = currentState.lock()) {
+        PLOG_INFO << "Core::onEntry() -> enter to " << state->getName() << " state.";
         state->enter();
         state->innerState = State::InnerState::EVENT;
     }
@@ -121,13 +130,17 @@ void Core::onEntry()
 
 void Core::onExit()
 {
-    currentState.lock()->exit();
-    LockGuard lock(qmtx);
-    evq.erase(std::remove_if(evq.begin(), evq.end(), [this](EvUnqPtr &ev) {
-        return ev->targetState.lock() == this->currentState.lock();
-    }), evq.end());
-    currentState.lock()->innerState = State::InnerState::ENTRY;
-    if (auto next = nextState.lock()) {
-        currentState = next;
+    PLOG_INFO << "Core::onExit called.";
+    if (auto state = currentState.lock()) {
+        state->exit();
+        PLOG_INFO << "Core::onExit() -> exit from " << state->getName() << " state.";
+        LockGuard lock(qmtx);
+        evq.erase(std::remove_if(evq.begin(), evq.end(), [this](EvUnqPtr &ev) {
+            return ev->targetState.lock() == this->currentState.lock();
+        }), evq.end());
+        state->innerState = State::InnerState::ENTRY;
+        if (auto next = nextState.lock()) {
+            currentState = next;
+        }
     }
 }
