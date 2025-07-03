@@ -3,23 +3,29 @@
 #include <plog/Logger.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Initializers/ConsoleInitializer.h>
-#include "src/core/timer/timer.h"
-#include "src/core/eventloop/eventloop.h"
-#include "src/core/stateMachine/event.h"
-#include "src/core/stateMachine/core.h"
-#include "src/states/startup.h"
+#include "core/timer/timer.h"
+#include "core/eventloop/eventloop.h"
+#include "core/stateMachine/event.h"
+#include "core/stateMachine/core.h"
+#include "states/startup.h"
+#include "gui/gui.h"
 
 int main() {
 
     plog::init<plog::TxtFormatter>(plog::debug, plog::streamStdOut);
     PLOG_INFO << "Welcome to PoSim - POS Emulator using LVGL and C++17!";
     auto startUp = State::create<StartUp>(nullptr);
+    shared_ptr<ui::Gui> gui = make_shared<ui::LVGL>();
+    gui->init();
     StateMachine::Core::instance().init(startUp);
     EventLoop::instance().registerChecker([]() noexcept {
         TimerHandler::instance().run();
     });
     StateMachine::Core::instance().registerCb([]() noexcept {
         EventLoop::instance().runCycle();
+    });
+    StateMachine::Core::instance().registerCb([gui]() noexcept {
+        gui->handle();
     });
 
     StateMachine::Core::instance().exec();
