@@ -3,28 +3,54 @@
 #include <chrono>
 #include <SDL2/SDL.h>        // macOS/Linux
 #include "plog/Log.h"
+#include "asset.h"
 
 using namespace ui;
 
-#define SCREEN_WIDTH    520
-#define SCREEN_HEIGHT   840
+#define SCREEN_WIDTH    1024
+#define SCREEN_HEIGHT   1536
 
 static uint32_t lv_tick_custom();
 
 void LVGL::init()
 {
+    // Disables SDL's DPI scaling behavior
+    SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
+
     /*LVGL init*/
     lv_init();
+    lv_fs_stdio_init();
+    lv_bmp_init();
+    lv_libpng_init();
 
     // SDL Display initialization
     lv_display_t *disp = lv_sdl_window_create(SCREEN_WIDTH, SCREEN_HEIGHT);
     lv_display_set_default(disp);
+    SDL_Window* win = SDL_GetWindowFromID(1);
+    SDL_Renderer* renderer = SDL_GetRenderer(win);
+
+    // Force logical size (disables auto-scaling)
+    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
 
     // SDL Mouse input
     lv_indev_t *indev = lv_sdl_mouse_create();
     lv_indev_set_display(indev, disp);
 
     lv_tick_set_cb(lv_tick_custom);
+    createMainScr();
+}
+
+void LVGL::createMainScr()
+{
+    /*Create main screen*/
+    lv_obj_t *scr = lv_obj_create(NULL);
+    lv_screen_load(scr);
+
+    lv_obj_t *scrImg = lv_img_create(scr);
+    lv_img_set_src(scrImg, ASSET_IMG_MAIN_SCR);
+    lv_obj_center(scrImg);
+    
 }
 
 void LVGL::handle()

@@ -15,6 +15,7 @@ namespace ui
         LVGL() = default;
         void init() override;
         void handle() override;
+        void createMainScr();
     };
 }
 

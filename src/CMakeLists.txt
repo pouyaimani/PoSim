@@ -22,7 +22,10 @@ add_executable(posim ${SOURCE_FILES})
 target_include_directories(posim PUBLIC 
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/
+    ${PNG_INCLUDE_DIR}
 )
 
+find_package(PNG REQUIRED)
+
 # Link LVGL
-target_link_libraries(posim PRIVATE lvgl ${SDL2_LIBRARIES})
+target_link_libraries(posim PRIVATE lvgl ${SDL2_LIBRARIES} PNG::PNG)

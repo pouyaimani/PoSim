@@ -5,6 +5,8 @@
 #include "core/stateMachine/event.h"
 #include "plog/Log.h"
 #include "core/timer/timer.h"
+#include "examples/lv_examples.h"
+
 
 using namespace StateMachine;
 

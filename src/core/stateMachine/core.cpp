@@ -96,7 +96,7 @@ void Core::runCycle()
 
 void Core::onEvent()
 {
-    PLOG_INFO << "Core::onEvent called.";
+    // PLOG_INFO << "Core::onEvent called.";÷
     LockGuard lock(qmtx);
     for (auto it = evq.begin() ; it != evq.end();) {
         if (auto target = (*it)->targetState.lock(); target == currentState.lock()) {
