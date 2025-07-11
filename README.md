@@ -3,6 +3,8 @@
 A professional POS (Point of Sale) terminal emulator written in **C++17** using **LVGL** for UI rendering.  
 Perfect for embedded system developers or anyone interested in building a payment terminal UI simulation.
 
+![Posim Welocome](assets/mainScr.png)
+
 ---
 
 ## Tech Stack
