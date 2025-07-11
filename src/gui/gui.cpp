@@ -63,7 +63,7 @@ void LVGL::createDisplay()
 {
     display = lv_img_create(scrImg);
     lv_img_set_src(display, ASSET_IMG_POS_DISP);
-    lv_obj_align(display, LV_ALIGN_CENTER, 2, -35);
+    lv_obj_align(display, LV_ALIGN_CENTER, -13, 27);
     lv_obj_set_style_radius(display, 10, LV_PART_MAIN);
 }
 
