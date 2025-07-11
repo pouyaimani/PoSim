@@ -12,6 +12,12 @@ using namespace ui;
 
 static uint32_t lv_tick_custom();
 
+LVGL& LVGL::instance()
+{
+    static LVGL instance;
+    return instance;
+}
+
 void LVGL::init()
 {
     // Disables SDL's DPI scaling behavior
@@ -32,25 +38,33 @@ void LVGL::init()
     // Force logical size (disables auto-scaling)
     SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-
     // SDL Mouse input
     lv_indev_t *indev = lv_sdl_mouse_create();
     lv_indev_set_display(indev, disp);
 
     lv_tick_set_cb(lv_tick_custom);
+
     createMainScr();
+    createDisplay();
 }
 
 void LVGL::createMainScr()
 {
     /*Create main screen*/
-    lv_obj_t *scr = lv_obj_create(NULL);
-    lv_screen_load(scr);
+    actScr = lv_obj_create(NULL);
+    lv_screen_load(actScr);
 
-    lv_obj_t *scrImg = lv_img_create(scr);
+    scrImg = lv_img_create(actScr);
     lv_img_set_src(scrImg, ASSET_IMG_MAIN_SCR);
     lv_obj_center(scrImg);
-    
+}
+
+void LVGL::createDisplay()
+{
+    display = lv_img_create(scrImg);
+    lv_img_set_src(display, ASSET_IMG_POS_DISP);
+    lv_obj_align(display, LV_ALIGN_CENTER, 2, -35);
+    lv_obj_set_style_radius(display, 10, LV_PART_MAIN);
 }
 
 void LVGL::handle()

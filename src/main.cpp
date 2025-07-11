@@ -15,8 +15,7 @@ int main() {
     plog::init<plog::TxtFormatter>(plog::debug, plog::streamStdOut);
     PLOG_INFO << "Welcome to PoSim - POS Emulator using LVGL and C++17!";
     auto startUp = State::create<StartUp>(nullptr);
-    shared_ptr<ui::Gui> gui = make_shared<ui::LVGL>();
-    gui->init();
+    ui::LVGL::instance().init();
     StateMachine::Core::instance().init(startUp);
     EventLoop::instance().registerChecker([]() noexcept {
         TimerHandler::instance().run();
@@ -24,8 +23,8 @@ int main() {
     StateMachine::Core::instance().registerCb([]() noexcept {
         EventLoop::instance().runCycle();
     });
-    StateMachine::Core::instance().registerCb([gui]() noexcept {
-        gui->handle();
+    StateMachine::Core::instance().registerCb([]() noexcept {
+        ui::LVGL::instance().handle();
     });
 
     StateMachine::Core::instance().exec();

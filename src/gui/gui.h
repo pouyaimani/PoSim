@@ -1,21 +1,22 @@
 #ifndef GUI_H
 #define GUI_H
 
+#include <lvgl.h>
+
 namespace ui
 {
-    class Gui {
+    class LVGL {
     public:
-        Gui() = default;
-        virtual void init() = 0;
-        virtual void handle() = 0;
-    };
-
-    class LVGL : public Gui {
-    public:
+        static LVGL& instance();
+        void init();
+        void handle();
+    private:
         LVGL() = default;
-        void init() override;
-        void handle() override;
+        lv_obj_t *display;
+        lv_obj_t *actScr;
+        lv_obj_t *scrImg;
         void createMainScr();
+        void createDisplay();
     };
 }
 
