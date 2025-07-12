@@ -10,6 +10,7 @@ namespace ui
         static LVGL& instance();
         void init();
         void handle();
+        lv_obj_t *getDisplay() noexcept;
     private:
         LVGL() = default;
         lv_obj_t *display;

@@ -62,9 +62,14 @@ void LVGL::createMainScr()
 void LVGL::createDisplay()
 {
     display = lv_img_create(scrImg);
-    lv_img_set_src(display, ASSET_IMG_POS_DISP);
+    lv_img_set_src(display, ASSET_IMG_BLK_STARTUP_SCR);
     lv_obj_align(display, LV_ALIGN_CENTER, -13, 27);
     lv_obj_set_style_radius(display, 10, LV_PART_MAIN);
+}
+
+lv_obj_t *LVGL::getDisplay() noexcept
+{
+    return display;
 }
 
 void LVGL::handle()
