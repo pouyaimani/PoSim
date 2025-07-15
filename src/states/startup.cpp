@@ -1,4 +1,8 @@
 #include "startup.h"
+#include "plog/Log.h"
+#include "core/timer/timer.h"
+#include "asset.h"
+#include "gui/gui.h"
 
 #define START_UP_SHOW_TIME_MS 4000
 
@@ -9,19 +13,12 @@ static void animCb(void *var, int32_t v)
 
 void StartUp::enter()
 {
-    logo = lv_img_create(ui::LVGL::instance().getDisplay());
-    lv_img_set_src(logo, ASSET_IMG_POS_LOGO);
-    lv_obj_set_align(logo, LV_ALIGN_CENTER);
-    // 
-    lv_obj_clear_flag(logo, LV_OBJ_FLAG_HIDDEN);
+    // logo = lv_img_create(ui::LVGL::instance().getDisplay());
+    logo.reset(new ui::Image(ui::LVGL::instance().getDisplay().raw()));
+    logo->setSrc(ASSET_IMG_POS_LOGO).center().show();
 
-    anim = new lv_anim_t;
-    lv_anim_init(anim);
-    lv_anim_set_var(anim, logo);
-    lv_anim_set_time(anim, START_UP_SHOW_TIME_MS);
-    lv_anim_set_values(anim, 0, LV_OPA_100);
-    lv_anim_set_exec_cb(anim, animCb);
-    lv_anim_start(anim);
+    anim.reset(new ui::Animation);
+    anim->setTime(START_UP_SHOW_TIME_MS).setValue(0, LV_OPA_100).setExec(logo.get()->raw(), animCb).start();
 
     Timer::singleShot(START_UP_SHOW_TIME_MS + 1000, []() {
         Events::TimeOut ev;
@@ -31,12 +28,12 @@ void StartUp::enter()
 
 void StartUp::handle(Events::TimeOut &ev)
 {
-    lv_obj_add_flag(logo, LV_OBJ_FLAG_HIDDEN);
-    lv_img_set_src(ui::LVGL::instance().getDisplay(), ASSET_IMG_POS_DISP);
+    logo->hide();
+    ui::LVGL::instance().getDisplay().setSrc(ASSET_IMG_POS_DISP);
 }
 
 void StartUp::exit()
 {
-    lv_obj_del(logo);
-    lv_anim_delete(anim, animCb);
+    logo.release();
+    anim.release();
 }

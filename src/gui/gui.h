@@ -2,6 +2,7 @@
 #define GUI_H
 
 #include <lvgl.h>
+#include "widget.h"
 
 namespace ui
 {
@@ -10,12 +11,12 @@ namespace ui
         static LVGL& instance();
         void init();
         void handle();
-        lv_obj_t *getDisplay() noexcept;
+        Image &getDisplay() noexcept;
     private:
         LVGL() = default;
-        lv_obj_t *display;
-        lv_obj_t *actScr;
-        lv_obj_t *scrImg;
+        std::unique_ptr<Image> display;
+        std::unique_ptr<Widget>  actScr;
+        std::unique_ptr<Image>  scrImg;
         void createMainScr();
         void createDisplay();
     };

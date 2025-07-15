@@ -51,25 +51,23 @@ void LVGL::init()
 void LVGL::createMainScr()
 {
     /*Create main screen*/
-    actScr = lv_obj_create(NULL);
-    lv_screen_load(actScr);
+    actScr.reset(new Widget(NULL));
+    lv_screen_load(actScr->raw());
 
-    scrImg = lv_img_create(actScr);
-    lv_img_set_src(scrImg, ASSET_IMG_MAIN_SCR);
-    lv_obj_center(scrImg);
+    scrImg.reset(new Image(actScr->raw()));
+    scrImg->setSrc(ASSET_IMG_MAIN_SCR);
+    scrImg->center();
 }
 
 void LVGL::createDisplay()
 {
-    display = lv_img_create(scrImg);
-    lv_img_set_src(display, ASSET_IMG_BLK_STARTUP_SCR);
-    lv_obj_align(display, LV_ALIGN_CENTER, -13, 27);
-    lv_obj_set_style_radius(display, 10, LV_PART_MAIN);
+    display.reset(new Image(actScr->raw()));
+    display->setSrc(ASSET_IMG_BLK_STARTUP_SCR).align(LV_ALIGN_CENTER, -13, 27).setRadius(10);
 }
 
-lv_obj_t *LVGL::getDisplay() noexcept
+Image &LVGL::getDisplay() noexcept
 {
-    return display;
+    return dynamic_cast<Image&>(*display.get());
 }
 
 void LVGL::handle()

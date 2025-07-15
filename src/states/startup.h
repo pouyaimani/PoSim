@@ -3,11 +3,7 @@
 
 #include "core/stateMachine/state.h"
 #include "core/stateMachine/event.h"
-#include "plog/Log.h"
-#include "core/timer/timer.h"
-#include "gui/gui.h"
-#include "asset.h"
-
+#include "gui/widget.h"
 
 using namespace StateMachine;
 
@@ -19,8 +15,8 @@ public:
     void handle(Events::TimeOut &ev) override;
 
 private:
-    lv_obj_t *logo;
-    lv_anim_t *anim;
+    std::unique_ptr<ui::Image> logo;
+    std::unique_ptr<ui::Animation> anim;
 
 };
 
