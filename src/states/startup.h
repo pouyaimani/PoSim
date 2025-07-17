@@ -3,31 +3,20 @@
 
 #include "core/stateMachine/state.h"
 #include "core/stateMachine/event.h"
-#include "plog/Log.h"
-#include "core/timer/timer.h"
-#include "examples/lv_examples.h"
-
+#include "gui/widget.h"
 
 using namespace StateMachine;
 
 class StartUp : public State {
 public:
     StartUp(StateShPtr parent) : State(parent, "startUp") {}
-    void enter() override {
-        PLOG_DEBUG << "startup enter()";
-        Timer::singleShot(2000, []() {
-            Events::TimeOut ev;
-            ev.dispatch();
-        });
-    }
-    void exit() override {
-        PLOG_DEBUG << "startup exit()";
-    }
-    void handle(Events::TimeOut &ev) override {
-        PLOG_DEBUG << "startup handle(Events::TimeOut &)";
-    }
+    void enter() override;
+    void exit() override;
+    void handle(Events::TimeOut &ev) override;
 
 private:
+    std::unique_ptr<ui::Image> logo;
+    std::unique_ptr<ui::Animation> anim;
 
 };
 
