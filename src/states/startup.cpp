@@ -3,6 +3,7 @@
 #include "core/timer/timer.h"
 #include "asset.h"
 #include "gui/gui.h"
+#include "stateFactory.h"
 
 #define START_UP_SHOW_TIME_MS 4000
 
@@ -13,7 +14,6 @@ static void animCb(void *var, int32_t v)
 
 void StartUp::enter()
 {
-    // logo = lv_img_create(ui::LVGL::instance().getDisplay());
     logo.reset(new ui::Image(ui::LVGL::instance().getDisplay().raw()));
     logo->setSrc(ASSET_IMG_POS_LOGO).center().show();
 
@@ -30,6 +30,7 @@ void StartUp::handle(Events::TimeOut &ev)
 {
     logo->hide();
     ui::LVGL::instance().getDisplay().setSrc(ASSET_IMG_POS_DISP);
+    goTo(StateFactory::get(StateId::Idle));
 }
 
 void StartUp::exit()

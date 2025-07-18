@@ -7,16 +7,15 @@
 #include "core/eventloop/eventloop.h"
 #include "core/stateMachine/event.h"
 #include "core/stateMachine/core.h"
-#include "states/startup.h"
+#include "states/stateFactory.h"
 #include "gui/gui.h"
 
 int main() {
 
     plog::init<plog::TxtFormatter>(plog::debug, plog::streamStdOut);
     PLOG_INFO << "Welcome to PoSim - POS Emulator using LVGL and C++17!";
-    auto startUp = State::create<StartUp>(nullptr);
     ui::LVGL::instance().init();
-    StateMachine::Core::instance().init(startUp);
+    StateMachine::Core::instance().init(StateFactory::get(StateId::StartUp));
     EventLoop::instance().registerChecker([]() noexcept {
         TimerHandler::instance().run();
     });
