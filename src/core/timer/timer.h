@@ -7,6 +7,35 @@
 
 using namespace std;
 
+class _TimerBase {
+public:
+    // Constructor
+    _TimerBase() = default;
+
+    // Destructor
+    ~_TimerBase() {};
+private:
+    using Callback = std::function<void()>;
+    using atomicBool = std::atomic<bool>;
+
+    // Start the timer with a delay in milliseconds and a callback function
+    void start(int milliseconds, Callback callback) noexcept;
+
+    // Stop the timer
+    void stop() noexcept;
+    bool isRunning() const noexcept;
+    cxxtimer::Timer cxxTimer;
+    atomicBool isStoped {true};
+    long long durationMs;
+    Callback callback;
+    atomicBool isSingleShot {false};
+    bool check();
+    atomicBool isExpired {false};
+    std::mutex mtx;
+    friend class TimerHandler;
+    friend class Timer;
+};
+
 class Timer {
 public:
     using Callback = std::function<void()>;
@@ -14,7 +43,6 @@ public:
     // Constructor
     Timer();
 
-    // Destructor
     ~Timer();
 
     // Start the timer with a delay in milliseconds and a callback function
@@ -26,13 +54,8 @@ public:
     static void singleShot(int milliseconds, Callback callback);
 
 private:
-    cxxtimer::Timer cxxTimer;
-    bool isStoped {true};
-    long long durationMs;
-    Callback callback;
-    bool isSingleShot {false};
     bool check();
-    friend class TimerHandler;
+    std::shared_ptr<_TimerBase> timerBase;
 };
 
 class TimerHandler {
@@ -44,13 +67,13 @@ private:
     TimerHandler(TimerHandler&&) = delete;
     TimerHandler& operator=(TimerHandler&&) = delete;
 
-    list<Timer*> timerList;
+    list<std::shared_ptr<_TimerBase>> timerList;
     std::mutex timerListMutex;
 
 public:
     static TimerHandler & instance();
-    void append(Timer* timer) noexcept;
-    void remove(Timer* timer) noexcept;
+    void append(std::shared_ptr<_TimerBase>) noexcept;
+    void remove(std::shared_ptr<_TimerBase>) noexcept;
     void run() noexcept;
 };
 
