@@ -6,19 +6,9 @@ A single-use or periodic timer that triggers a callback after a set duration.
 Managed centrally by TimerHandler.
 */
 
-Timer::Timer()
+void _TimerBase::start(int milliseconds, Callback callback) noexcept
 {
-    // Push timer in the Timer Handler
-    TimerHandler::instance().append(this);
-}
-
-Timer::~Timer()
-{
-    TimerHandler::instance().remove(this);
-}
-void Timer::start(int milliseconds, Callback callback) noexcept
-{
-    isStoped = false;
+    isStoped.store(false);
     durationMs = milliseconds;
     // Ensure clean start of timer
     cxxTimer.reset();
@@ -27,32 +17,71 @@ void Timer::start(int milliseconds, Callback callback) noexcept
     this->callback = std::move(callback);
 }
 
-void Timer::stop() noexcept
+void _TimerBase::stop() noexcept
 {
-    isStoped = true;
+    isStoped.store(true);
 }
 
-bool Timer::isRunning() const noexcept
+bool _TimerBase::isRunning() const noexcept
 {
-    return (isStoped == false);
+    return (isStoped.load() == false);
 }
 
-void Timer::singleShot(int milliseconds, Callback callback)
+bool _TimerBase::check()
 {
-    Timer *timer = new Timer;
-    timer->isSingleShot = true;
-    timer->start(milliseconds, callback);
-}
-
-bool Timer::check()
-{
-    if (!isStoped && (cxxTimer.count<cxxtimer::ms>() > durationMs)) {
+    if (!isStoped.load() && (cxxTimer.count<cxxtimer::ms>() > durationMs)) {
+    try {
         callback();
+    } catch (const std::exception&) {
+        // Will be provided soon
+    }
+
         cxxTimer.reset();
         cxxTimer.start();
         return true;
     }
     return false;
+}
+
+Timer::Timer()
+{
+    timerBase.reset(new _TimerBase);
+    // Push timer in the Timer Handler
+    TimerHandler::instance().append(timerBase);
+}
+
+Timer::~Timer()
+{
+    stop();
+    timerBase->isExpired.store(true);
+}
+
+void Timer::start(int milliseconds, Callback callback) noexcept
+{
+    timerBase->start(milliseconds, std::move(callback));
+}
+
+void Timer::stop() noexcept
+{
+    timerBase->stop();
+}
+
+bool Timer::isRunning() const noexcept
+{
+    return timerBase->isRunning();
+}
+
+void Timer::singleShot(int milliseconds, Callback callback)
+{
+    auto timerBase = std::make_shared<_TimerBase>();
+    timerBase->isSingleShot.store(true);
+    TimerHandler::instance().append(timerBase);
+    timerBase->start(milliseconds, callback);
+}
+
+bool Timer::check()
+{
+    return timerBase->check();
 }
 
 TimerHandler &TimerHandler::instance()
@@ -65,16 +94,16 @@ TimerHandler &TimerHandler::instance()
     return instance;
 }
 
-void TimerHandler::append(Timer* timer) noexcept
+void TimerHandler::append(std::shared_ptr<_TimerBase> timer) noexcept
 {
-    std::lock_guard<std::recursive_mutex> lock(timerListMutex);
+    std::lock_guard<std::mutex> lock(timerListMutex);
     // Push timer in the timerList
     timerList.push_back(timer);
 }
 
-void TimerHandler::remove(Timer* timer) noexcept
+void TimerHandler::remove(std::shared_ptr<_TimerBase> timer) noexcept
 {
-    std::lock_guard<std::recursive_mutex> lock(timerListMutex);
+    std::lock_guard<std::mutex> lock(timerListMutex);
     auto it = std::find(timerList.begin(), timerList.end(), timer);
     if (it != timerList.end()) {
         // Remove the timer pointer from the timerList
@@ -84,15 +113,31 @@ void TimerHandler::remove(Timer* timer) noexcept
 
 void TimerHandler::run() noexcept
 {
-    std::unique_lock<std::recursive_mutex> lock(timerListMutex);
-    for (auto it = timerList.begin() ; it != timerList.end();) {
-        auto& timer = *it;
-        ++it;
-        if (timer->check() && timer->isSingleShot) {
-            // Delete memory of single shot timer.
-            lock.unlock();
-            delete timer;
-            lock.lock();    
+    list<std::shared_ptr<_TimerBase>> deletionList;
+    /* Snapshot is used to make a copy of TimerList for pulling out user callable 
+     * under the mutex lock
+     */
+    list<std::shared_ptr<_TimerBase>> snapshot;
+
+    {
+        std::unique_lock<std::mutex> lock(timerListMutex);
+        snapshot = timerList;
+    }
+
+    for (auto& timer : snapshot) {
+        if (!timer->isExpired.load()) {
+            if (timer->check()) {
+                if (timer->isSingleShot.load()) {
+                    timer->isExpired.store(true);
+                }
+            }
         }
+    }
+
+    {
+        std::unique_lock<std::mutex> lock(timerListMutex);
+        timerList.remove_if([](const std::shared_ptr<_TimerBase>& timer) {
+            return timer->isExpired.load();
+        });
     }
 }
