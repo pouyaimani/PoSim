@@ -65,7 +65,7 @@ void Core::exec()
     }
 }
 
-void Core::raiseEvent(EvUnqPtr ev)
+void Core::raiseEvent(EvUnqPtr &&ev)
 {
     PLOG_INFO << "Core::raiseEvent called.";
     if (ev->targetState.expired()) {
