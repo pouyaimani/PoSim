@@ -77,6 +77,38 @@ Each screen or interaction phase is modeled as a `State` class with the followin
 
 ## Build Instructions
 
+### Clone and install vcpkg
+
+```bash
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh     # On macOS/Linux
+.\bootstrap-vcpkg.bat    # On Windows
+```
+
+### Install SDL2
+
+```bash
+./vcpkg install sdl2     # or .\vcpkg install sdl2 on Windows
+```
+
+### Install libpng
+
+```bash
+./vcpkg install libpng     # or .\vcpkg install libpng on Windows
+```
+
+###  Bonus Tip
+
+sdl2-image will handle libpng and zlib dependencies for you automatically.
+Install both sdl2 and sdl2-image like this:
+
+```bash
+./vcpkg install sdl2 sdl2-image
+```
+
+### Build the project with Cmake
+
 ```bash
 mkdir build
 cd build
@@ -84,8 +116,6 @@ cmake ..
 make
 ./posim
 ```
-
-> Make sure LVGL is correctly included or linked. Simulator mode is supported.
 
 ---
 
