@@ -4,11 +4,9 @@
 #include <SDL2/SDL.h>        // macOS/Linux
 #include "plog/Log.h"
 #include "asset.h"
+#include "statusBar.h"
 
 using namespace ui;
-
-#define SCREEN_WIDTH    1024
-#define SCREEN_HEIGHT   1536
 
 static uint32_t lv_tick_custom();
 
@@ -46,6 +44,7 @@ void LVGL::init()
 
     createMainScr();
     createDisplay();
+    createStatusBar();
 }
 
 void LVGL::createMainScr()
@@ -79,6 +78,21 @@ void LVGL::handle()
     if(time_till_next == LV_NO_TIMER_READY) {
         PLOG_ERROR << "LVGL: No timer is ready.";
     }
+}
+
+void LVGL::createStatusBar()
+{
+    statusBar.reset(new StatusBar);
+}
+
+void LVGL::showStatusBar()
+{
+    statusBar->show();
+}
+
+void LVGL::hideStatusBar()
+{
+    statusBar->hide();
 }
 
 // Returns current system tick in ms (required by LV_TICK_CUSTOM)
