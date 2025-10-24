@@ -5,6 +5,7 @@
 #include "plog/Log.h"
 #include "asset.h"
 #include "statusBar.h"
+#include <src/tick/lv_tick.h>
 
 using namespace ui;
 
@@ -40,7 +41,9 @@ void LVGL::init()
     lv_indev_t *indev = lv_sdl_mouse_create();
     lv_indev_set_display(indev, disp);
 
-    lv_tick_set_cb(lv_tick_custom);
+    lvTimer.start(1, []() {
+        lv_tick_inc(1);
+    });
 
     createMainScr();
     createDisplay();
@@ -93,14 +96,4 @@ void LVGL::showStatusBar()
 void LVGL::hideStatusBar()
 {
     statusBar->hide();
-}
-
-// Returns current system tick in ms (required by LV_TICK_CUSTOM)
-uint32_t lv_tick_custom() 
-{
-    using namespace std::chrono;
-    static const auto start_time = steady_clock::now();
-    return static_cast<uint32_t>(
-        duration_cast<milliseconds>(steady_clock::now() - start_time).count()
-    );
 }

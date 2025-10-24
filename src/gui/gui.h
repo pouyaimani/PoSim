@@ -4,6 +4,7 @@
 #include <lvgl.h>
 #include "widget.h"
 #include "statusBar.h"
+#include "core/timer/timer.h"
 
 #define SCREEN_WIDTH    1024
 #define SCREEN_HEIGHT   1536
@@ -26,6 +27,7 @@ namespace ui
         std::unique_ptr<Widget> actScr;
         std::unique_ptr<Image> scrImg;
         std::unique_ptr<StatusBar> statusBar;
+        Timer lvTimer;
         void createMainScr();
         void createDisplay();
         void createStatusBar();
