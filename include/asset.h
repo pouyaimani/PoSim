@@ -9,5 +9,6 @@
 #define ASSET_IMG_BATTERY                               "S:battery.png"
 #define ASSET_IMG_SIGNAL                                "S:signal.png"
 #define ASSET_IMG_WIFI                                  "S:wifi.png"
+#define ASSET_IMG_ARROW                                 "S:arrow.png"
 
 #endif

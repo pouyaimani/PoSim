@@ -152,6 +152,14 @@ namespace ui
             lv_anim_start(&anim);
         }
 
+        void pause() {
+            lv_anim_pause(&anim);
+        }
+
+        void resume() {
+            lv_anim_resume(&anim);
+        }
+
         Animation& setTime(uint32_t time) {
             lv_anim_set_time(&anim, time);
             return *this;
@@ -159,6 +167,31 @@ namespace ui
 
         Animation& setValue(uint32_t start, uint32_t end) {
             lv_anim_set_values(&anim,start, end);
+            return *this;
+        }
+
+        Animation& setDuration(uint32_t duration) {
+            lv_anim_set_duration(&anim, duration);
+            return *this;
+        }
+
+        Animation& setRepeatCount(uint32_t count) {
+            lv_anim_set_repeat_count(&anim, count);
+            return *this;
+        }
+
+        Animation& setRepeatDelay(uint32_t delay) {
+            lv_anim_set_repeat_delay(&anim, delay);
+            return *this;
+        }
+
+        Animation& setDelay(uint32_t delay) {
+            lv_anim_set_delay(&anim, delay);
+            return *this;
+        }
+
+        Animation& setEarlyApply(bool state) {
+            lv_anim_set_early_apply(&anim, state);
             return *this;
         }
     };
