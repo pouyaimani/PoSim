@@ -72,6 +72,11 @@ Image &LVGL::getDisplay() noexcept
     return dynamic_cast<Image&>(*display.get());
 }
 
+Widget &LVGL::getScreen() noexcept
+{
+    return dynamic_cast<Widget&>(*actScr.get());
+}
+
 void LVGL::handle()
 {
     uint32_t time_till_next = lv_timer_handler();

@@ -7,7 +7,10 @@
 #include "gui/gui.h"
 #include "plog/Log.h"
 
-#define ARROW_ANIM_RANGE 300
+#define ARROW_ANIM_RANGE            300
+#define SWIPE_BUTTON_OFFSET         -222
+#define SWIPE_BUTTON_WIDTH          200
+#define SWIPE_BUTTON_HEIGHT         50
 
 using namespace StateMachine;
 using namespace ui;
@@ -38,6 +41,14 @@ class Idle : public State {
 public:
     Idle(StateShPtr parent) : State(parent, "idle") {
         swipeCardImg.reset(new Image(LVGL::instance().getDisplay().raw()));
+        swipeButton.reset(new Button(LVGL::instance().getScreen().raw()));
+        swipeButton->align(LV_ALIGN_BOTTOM_MID, 0, SWIPE_BUTTON_OFFSET).
+            setSize(SWIPE_BUTTON_WIDTH, SWIPE_BUTTON_HEIGHT).setBgOpa(LV_OPA_0)
+                .setBorderOpa(LV_OPA_0);
+        swipeButton->textBox().setSize(SWIPE_BUTTON_WIDTH, SWIPE_BUTTON_HEIGHT)
+            .setText("press to swipe")
+                .setFont(&lv_font_montserrat_24).setBorderOpa(LV_OPA_0)
+                    .setBgOpa(LV_OPA_0).setTextAlign(LV_TEXT_ALIGN_CENTER).setBgColor(0);
         swipeCardImg->setSrc(ASSET_IMG_ARROW).align(LV_ALIGN_RIGHT_MID, 0, -ARROW_ANIM_RANGE);
         alignAnim.reset(new Animation);
         opaAnim.reset(new Animation);
@@ -56,6 +67,7 @@ public:
 
 private:
     std::unique_ptr<ui::Image> swipeCardImg;
+    std::unique_ptr<ui::Button> swipeButton;
 };
 
 #endif

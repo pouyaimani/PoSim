@@ -114,29 +114,49 @@ namespace ui
             return static_cast<TextBox&>(*this);
         }
 
-        void setFont(const lv_font_t *font) {
+        TextBox &setFont(const lv_font_t *font) {
             lv_obj_set_style_text_font(obj, font, 0);
+            return static_cast<TextBox&>(*this);
         }
 
-        void setTextColor(uint32_t color) {
+        TextBox &setTextColor(uint32_t color) {
             lv_obj_set_style_text_color(obj, lv_color_hex(color), 0);
+            return static_cast<TextBox&>(*this);
         }
 
-        void setTextBold(bool en) {
-            
+        TextBox &setTextBold(bool en) {
+            return static_cast<TextBox&>(*this);
         }
 
-        void setTextAlign(lv_text_align_t align) {
+        TextBox &setTextAlign(lv_text_align_t align) {
             lv_obj_set_style_text_align(obj, align, 0);
+            return static_cast<TextBox&>(*this);
         }
 
-        void setLongMode(lv_label_long_mode_t mode) {
+        TextBox &setLongMode(lv_label_long_mode_t mode) {
             lv_label_set_long_mode(obj, mode);
+            return static_cast<TextBox&>(*this);
         }
 
-        void clearText() {
+        TextBox &clearText() {
             lv_label_set_text(obj, "");
+            return static_cast<TextBox&>(*this);
         }
+    };
+
+    class Button : public LvObject<Button, lv_button_create> {
+    public:
+        Button(lv_obj_t *parent) : LvObject(parent) {
+            textbox.reset(new TextBox(this->raw()));
+            textbox->align(LV_ALIGN_CENTER);
+        }
+
+        TextBox &textBox() {
+            return static_cast<TextBox&>(*this->textbox.get());
+        }
+
+    private:
+        std::unique_ptr<TextBox> textbox;
     };
 
     class Animation {

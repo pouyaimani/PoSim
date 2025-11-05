@@ -19,6 +19,7 @@ namespace ui
         void init();
         void handle();
         Image &getDisplay() noexcept;
+        Widget &getScreen() noexcept;
         void showStatusBar();
         void hideStatusBar();
     private:
