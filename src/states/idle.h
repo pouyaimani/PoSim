@@ -8,7 +8,7 @@
 #include "plog/Log.h"
 
 #define ARROW_ANIM_RANGE            300
-#define SWIPE_BUTTON_OFFSET         -222
+#define SWIPE_BUTTON_OFFSET         70
 #define SWIPE_BUTTON_WIDTH          200
 #define SWIPE_BUTTON_HEIGHT         50
 

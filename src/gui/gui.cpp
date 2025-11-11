@@ -7,6 +7,13 @@
 #include "statusBar.h"
 #include <src/tick/lv_tick.h>
 
+// Detect platform
+#if defined(__APPLE__) && defined(__MACH__)
+    #define IS_MACOS true
+#else
+    #define IS_MACOS false
+#endif
+
 using namespace ui;
 
 static uint32_t lv_tick_custom();
@@ -21,6 +28,8 @@ void LVGL::init()
 {
     // Disables SDL's DPI scaling behavior
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+
 
     /*LVGL init*/
     lv_init();
@@ -31,12 +40,20 @@ void LVGL::init()
     // SDL Display initialization
     lv_display_t *disp = lv_sdl_window_create(SCREEN_WIDTH, SCREEN_HEIGHT);
     lv_display_set_default(disp);
-    SDL_Window* win = SDL_GetWindowFromID(1);
-    SDL_Renderer* renderer = SDL_GetRenderer(win);
 
-    // Force logical size (disables auto-scaling)
-    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
-
+    if (IS_MACOS) {
+        SDL_Window *window = SDL_GetWindowFromID(1);
+        if (window) {
+            float scale;
+            SDL_GetDisplayDPI(0, NULL, NULL, &scale);
+            int window_w, window_h, drawable_w, drawable_h;
+            SDL_GetWindowSize(window, &window_w, &window_h);
+            SDL_GL_GetDrawableSize(window, &drawable_w, &drawable_h);
+            float scale_x = (float)drawable_w / window_w;
+            float scale_y = (float)drawable_h / window_h;
+            lv_display_set_resolution(disp, drawable_w, drawable_h);
+        }
+    }
     // SDL Mouse input
     lv_indev_t *indev = lv_sdl_mouse_create();
     lv_indev_set_display(indev, disp);
