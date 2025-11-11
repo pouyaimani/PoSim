@@ -4,9 +4,18 @@
 #include <lvgl.h>
 #include <memory>
 #include <functional>
+#include "plog/Log.h"
 
 namespace ui
 {
+
+    inline void eventTrampoline(lv_event_t * e)
+    {
+        auto cb = static_cast<std::function<void(lv_event_t*)>*>(lv_event_get_user_data(e));
+        if (cb && *cb)
+            (*cb)(e);
+    }
+    
     template<typename Derived, lv_obj_t* (*CreateFn)(lv_obj_t*)>
     class LvObject {
         #define RET_REF return static_cast<Derived&>(*this);
@@ -84,6 +93,22 @@ namespace ui
 
         Derived& setFlexAlign(lv_flex_align_t mainPlace, lv_flex_align_t crossPlace, lv_flex_align_t trackCrossPlace) {
             lv_obj_set_flex_align(obj, mainPlace, crossPlace, trackCrossPlace); RET_REF
+        }
+
+        Derived& addFlag(lv_obj_flag_t flag) {
+            lv_obj_add_flag(obj, flag); RET_REF
+        }
+
+        Derived& removeFlag(lv_obj_flag_t flag) {
+            lv_obj_remove_flag(obj, flag); RET_REF
+        }
+
+        void addEvent(std::function<void(lv_event_t*)> cb, lv_event_code_t code = LV_EVENT_ALL) {
+            auto *cbPtr = new std::function<void(lv_event_t*)>(std::move(cb));
+            lv_obj_add_event_cb(obj, eventTrampoline, code, cbPtr);
+            lv_obj_add_event_cb(this->raw(), [](lv_event_t * e) {
+            delete static_cast<std::function<void(lv_event_t*)>*>(lv_event_get_user_data(e));
+            }, LV_EVENT_DELETE, cbPtr);
         }
 
     protected:
