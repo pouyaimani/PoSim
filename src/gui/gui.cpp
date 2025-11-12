@@ -81,6 +81,7 @@ void LVGL::createMainScr()
 void LVGL::createDisplay()
 {
     display.reset(new Image(actScr->raw()));
+    display->setSize(470, 840);
     display->setSrc(ASSET_IMG_BLK_STARTUP_SCR).align(LV_ALIGN_CENTER, -13, 27).setRadius(10);
 }
 
