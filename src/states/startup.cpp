@@ -30,6 +30,7 @@ void StartUp::handle(Events::TimeOut &ev)
 {
     logo->hide();
     ui::LVGL::instance().getDisplay().setSrc(ASSET_IMG_POS_DISP);
+    ui::LVGL::instance().showStatusBar();
     goTo(StateFactory::get(StateId::Idle));
 }
 

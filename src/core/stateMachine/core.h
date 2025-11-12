@@ -31,7 +31,7 @@ namespace StateMachine
         std::mutex qmtx;
         std::mutex cbMtc;
         std::vector<Callback> callback;
-        void raiseEvent(EvUnqPtr ev);
+        void raiseEvent(EvUnqPtr &&ev);
         void goTo(StateShPtr);
         void onExit();
         void onEntry();

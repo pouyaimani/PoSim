@@ -4,10 +4,18 @@
 #include <lvgl.h>
 #include <memory>
 #include <functional>
+#include "plog/Log.h"
 
 namespace ui
 {
 
+    inline void eventTrampoline(lv_event_t * e)
+    {
+        auto cb = static_cast<std::function<void(lv_event_t*)>*>(lv_event_get_user_data(e));
+        if (cb && *cb)
+            (*cb)(e);
+    }
+    
     template<typename Derived, lv_obj_t* (*CreateFn)(lv_obj_t*)>
     class LvObject {
         #define RET_REF return static_cast<Derived&>(*this);
@@ -19,7 +27,7 @@ namespace ui
 
         lv_obj_t *raw() { return obj; }
 
-        Derived& align(lv_align_t align, int16_t x, int16_t y) {
+        Derived& align(lv_align_t align, int16_t x = 0, int16_t y = 0) {
             lv_obj_align(obj, align, x, y); RET_REF
         }
 
@@ -43,6 +51,65 @@ namespace ui
             lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN); RET_REF
         }
 
+        Derived& setBgOpa(lv_opa_t opa) {
+            lv_obj_set_style_bg_opa(obj, opa, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setBorderOpa(lv_opa_t opa) {
+            lv_obj_set_style_border_opa(obj, opa, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setBgColor(uint32_t color) {
+            lv_obj_set_style_bg_color(obj, lv_color_hex(color), LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setBorderColor(uint32_t color) {
+            lv_obj_set_style_border_color(obj, lv_color_hex(color), LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setBorderWidth(uint16_t width) {
+            lv_obj_set_style_border_width(obj, width, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& hideBorder(lv_border_side_t border) {
+            lv_obj_set_style_border_side(obj, LV_BORDER_SIDE_FULL & ~border, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& showBorder(lv_border_side_t border) {
+            lv_obj_set_style_border_side(obj, border, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setScrollEnable(bool en) {
+            lv_obj_set_scrollbar_mode(obj, en ? LV_SCROLLBAR_MODE_ACTIVE : LV_SCROLLBAR_MODE_OFF); RET_REF
+        }
+
+        Derived& setLayout(lv_layout_t layout) {
+            lv_obj_set_layout(obj, layout); RET_REF
+        }
+
+        Derived& setFlexFlow(lv_flex_flow_t flow) {
+            lv_obj_set_flex_flow(obj, flow); RET_REF
+        }
+
+        Derived& setFlexAlign(lv_flex_align_t mainPlace, lv_flex_align_t crossPlace, lv_flex_align_t trackCrossPlace) {
+            lv_obj_set_flex_align(obj, mainPlace, crossPlace, trackCrossPlace); RET_REF
+        }
+
+        Derived& addFlag(lv_obj_flag_t flag) {
+            lv_obj_add_flag(obj, flag); RET_REF
+        }
+
+        Derived& removeFlag(lv_obj_flag_t flag) {
+            lv_obj_remove_flag(obj, flag); RET_REF
+        }
+
+        void addEvent(std::function<void(lv_event_t*)> cb, lv_event_code_t code = LV_EVENT_ALL) {
+            auto *cbPtr = new std::function<void(lv_event_t*)>(std::move(cb));
+            lv_obj_add_event_cb(obj, eventTrampoline, code, cbPtr);
+            lv_obj_add_event_cb(this->raw(), [](lv_event_t * e) {
+            delete static_cast<std::function<void(lv_event_t*)>*>(lv_event_get_user_data(e));
+            }, LV_EVENT_DELETE, cbPtr);
+        }
 
     protected:
         lv_obj_t* obj = nullptr;
@@ -57,10 +124,64 @@ namespace ui
     class Image : public LvObject<Image, lv_img_create> {
     public:
         Image(lv_obj_t *parent) : LvObject(parent) {}
-        Image &setSrc(const char *src) {
-            lv_img_set_src(obj, src);
+        Image &setSrc(std::string_view src) {
+            lv_img_set_src(obj, src.data());
             return static_cast<Image&>(*this);
         }
+    };
+
+    class TextBox : public LvObject<TextBox, lv_label_create> {
+    public:
+        TextBox(lv_obj_t *parent) : LvObject(parent) {}
+        TextBox &setText(std::string_view text) {
+            lv_label_set_text(obj, text.data());
+            lv_obj_set_height(obj, LV_SIZE_CONTENT);
+            return static_cast<TextBox&>(*this);
+        }
+
+        TextBox &setFont(const lv_font_t *font) {
+            lv_obj_set_style_text_font(obj, font, 0);
+            return static_cast<TextBox&>(*this);
+        }
+
+        TextBox &setTextColor(uint32_t color) {
+            lv_obj_set_style_text_color(obj, lv_color_hex(color), 0);
+            return static_cast<TextBox&>(*this);
+        }
+
+        TextBox &setTextBold(bool en) {
+            return static_cast<TextBox&>(*this);
+        }
+
+        TextBox &setTextAlign(lv_text_align_t align) {
+            lv_obj_set_style_text_align(obj, align, 0);
+            return static_cast<TextBox&>(*this);
+        }
+
+        TextBox &setLongMode(lv_label_long_mode_t mode) {
+            lv_label_set_long_mode(obj, mode);
+            return static_cast<TextBox&>(*this);
+        }
+
+        TextBox &clearText() {
+            lv_label_set_text(obj, "");
+            return static_cast<TextBox&>(*this);
+        }
+    };
+
+    class Button : public LvObject<Button, lv_button_create> {
+    public:
+        Button(lv_obj_t *parent) : LvObject(parent) {
+            textbox.reset(new TextBox(this->raw()));
+            textbox->align(LV_ALIGN_CENTER);
+        }
+
+        TextBox &textBox() {
+            return static_cast<TextBox&>(*this->textbox.get());
+        }
+
+    private:
+        std::unique_ptr<TextBox> textbox;
     };
 
     class Animation {
@@ -76,6 +197,14 @@ namespace ui
             lv_anim_start(&anim);
         }
 
+        void pause() {
+            lv_anim_pause(&anim);
+        }
+
+        void resume() {
+            lv_anim_resume(&anim);
+        }
+
         Animation& setTime(uint32_t time) {
             lv_anim_set_time(&anim, time);
             return *this;
@@ -83,6 +212,31 @@ namespace ui
 
         Animation& setValue(uint32_t start, uint32_t end) {
             lv_anim_set_values(&anim,start, end);
+            return *this;
+        }
+
+        Animation& setDuration(uint32_t duration) {
+            lv_anim_set_duration(&anim, duration);
+            return *this;
+        }
+
+        Animation& setRepeatCount(uint32_t count) {
+            lv_anim_set_repeat_count(&anim, count);
+            return *this;
+        }
+
+        Animation& setRepeatDelay(uint32_t delay) {
+            lv_anim_set_repeat_delay(&anim, delay);
+            return *this;
+        }
+
+        Animation& setDelay(uint32_t delay) {
+            lv_anim_set_delay(&anim, delay);
+            return *this;
+        }
+
+        Animation& setEarlyApply(bool state) {
+            lv_anim_set_early_apply(&anim, state);
             return *this;
         }
     };
