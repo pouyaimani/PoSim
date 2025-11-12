@@ -184,6 +184,57 @@ namespace ui
         std::unique_ptr<TextBox> textbox;
     };
 
+    class ButtonMatrix : public LvObject<ButtonMatrix, lv_buttonmatrix_create> {
+    public:
+        ButtonMatrix(lv_obj_t *parent) : LvObject(parent) {}
+
+        ButtonMatrix &setMap(const char * const map[]) {
+            lv_buttonmatrix_set_map(obj, map);
+            return static_cast<ButtonMatrix&>(*this);
+        }
+
+        ButtonMatrix &setCtrl(uint32_t id, lv_buttonmatrix_ctrl_t ctrl) {
+            lv_buttonmatrix_set_button_ctrl(obj, id, ctrl);
+            return static_cast<ButtonMatrix&>(*this);
+        }
+
+        ButtonMatrix &setButtonWidth(uint32_t id, uint32_t width) {
+            lv_buttonmatrix_set_button_width(obj, id, width);
+            return static_cast<ButtonMatrix&>(*this);
+        }
+    };
+
+    class Menu : public LvObject<Menu, lv_menu_create> {
+    public:
+        Menu(lv_obj_t *parent) : LvObject(parent) {
+            mainPage = lv_menu_page_create(obj, NULL);
+        }
+
+        Menu &append(const char *item) {
+            containers.emplace_back(lv_menu_cont_create(mainPage));
+            items.emplace_back(std::unique_ptr<TextBox>(new TextBox(containers.back())));
+            items.back()->setText(item);
+            return static_cast<Menu&>(*this);
+        }
+
+        Menu &enableRootBack(bool en) {
+            lv_menu_mode_root_back_button_t mode = en ? LV_MENU_ROOT_BACK_BUTTON_ENABLED :
+                LV_MENU_ROOT_BACK_BUTTON_DISABLED;
+            lv_menu_set_mode_root_back_button(obj, mode);
+            return static_cast<Menu&>(*this);
+        }
+
+        void create() {
+            lv_menu_set_page(obj, mainPage);
+        }
+
+    private:
+        lv_obj_t *mainPage;
+        std::vector<lv_obj_t *> containers;
+        std::vector<std::unique_ptr<TextBox>> items;
+
+    };
+
     class Animation {
         lv_anim_t anim;
     public:

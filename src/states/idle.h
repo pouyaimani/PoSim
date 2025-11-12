@@ -44,11 +44,14 @@ public:
         swipeButton.reset(new Button(LVGL::instance().getScreen().raw()));
         swipeButton->align(LV_ALIGN_BOTTOM_MID, 0, SWIPE_BUTTON_OFFSET).
             setSize(SWIPE_BUTTON_WIDTH, SWIPE_BUTTON_HEIGHT).setBgOpa(LV_OPA_0)
-                .setBorderOpa(LV_OPA_0);
+                .setBorderOpa(LV_OPA_0).removeFlag(LV_OBJ_FLAG_PRESS_LOCK).addFlag(LV_OBJ_FLAG_CLICKABLE);
         swipeButton->textBox().setSize(SWIPE_BUTTON_WIDTH, SWIPE_BUTTON_HEIGHT)
             .setText("press to swipe")
                 .setFont(&lv_font_montserrat_24).setBorderOpa(LV_OPA_0)
-                    .setBgOpa(LV_OPA_0).setTextAlign(LV_TEXT_ALIGN_CENTER).setBgColor(0);
+                    .setBgOpa(LV_OPA_0).setTextAlign(LV_TEXT_ALIGN_CENTER);
+        swipeButton->addEvent([this](lv_event_t* e) {
+            goTo(StateFactory::get(StateId::Cardholder));
+            }, LV_EVENT_CLICKED);
         swipeCardImg->setSrc(ASSET_IMG_ARROW).align(LV_ALIGN_RIGHT_MID, 0, -ARROW_ANIM_RANGE);
         alignAnim.reset(new Animation);
         opaAnim.reset(new Animation);
