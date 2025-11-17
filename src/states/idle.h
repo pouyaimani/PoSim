@@ -59,10 +59,12 @@ public:
     void enter() override {
         alignAnim->setTime(600).setValue(-ARROW_ANIM_RANGE, ARROW_ANIM_RANGE).
         setExec(swipeCardImg.get()->raw(), animCbAlign).start();
-        opaAnim->setTime(600).setValue(LV_OPA_100, LV_OPA_0).setExec(swipeCardImg.get()->raw(), animCbOpa);
+        opaAnim->setTime(600).setValue(LV_OPA_100, LV_OPA_0).
+            setExec(swipeCardImg.get()->raw(), animCbOpa);
+        swipeCardImg->show();
     }
     void exit() override {
-
+        swipeCardImg->hide();
     }
     void handle(Events::TimeOut &ev) override {
 

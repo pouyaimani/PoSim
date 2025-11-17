@@ -5,6 +5,7 @@
 #include <memory>
 #include <functional>
 #include "plog/Log.h"
+#include "common.h"
 
 namespace ui
 {
@@ -15,13 +16,21 @@ namespace ui
         if (cb && *cb)
             (*cb)(e);
     }
+
+    enum class Layout{
+        FLEX_HOR,
+        FLEX_VER,
+        FLEX_HOR_WRAP,
+        FLEX_VER_WRAP,
+        GRID
+    };
     
     template<typename Derived, lv_obj_t* (*CreateFn)(lv_obj_t*)>
-    class LvObject {
+    class object {
         #define RET_REF return static_cast<Derived&>(*this);
     public:
-        explicit LvObject(lv_obj_t* parent) : obj(CreateFn(parent)) {}
-        virtual ~LvObject() {
+        explicit object(lv_obj_t* parent) : obj(CreateFn(parent)) {}
+        virtual ~object() {
             if (obj) lv_obj_del(obj);
         }
 
@@ -103,6 +112,40 @@ namespace ui
             lv_obj_remove_flag(obj, flag); RET_REF
         }
 
+        Derived& setPadAll(int pad) {
+            lv_obj_set_style_pad_all(obj, pad, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setPadTop(int pad) {
+            lv_obj_set_style_pad_top(obj, pad, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setPadBottom(int pad) {
+            lv_obj_set_style_pad_bottom(obj, pad, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setPadRight(int pad) {
+            lv_obj_set_style_pad_right(obj, pad, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setPadLeft(int pad) {
+            lv_obj_set_style_pad_left(obj, pad, LV_PART_MAIN); RET_REF
+        }
+
+        Derived& setRowPad(uint16_t width) {
+            lv_obj_set_style_pad_row(obj, width, 0); RET_REF
+        }
+
+        Derived& setColumnPad(uint16_t width) {
+            lv_obj_set_style_pad_column(obj, width, 0); RET_REF
+        }
+
+        Derived& setGradColor(uint32_t color, lv_grad_dir_t dir) {
+            lv_obj_set_style_bg_grad_color(obj, lv_color_hex(color), 0);
+            lv_obj_set_style_bg_grad_dir(obj, dir, 0);
+            RET_REF
+        }
+
         void addEvent(std::function<void(lv_event_t*)> cb, lv_event_code_t code = LV_EVENT_ALL) {
             auto *cbPtr = new std::function<void(lv_event_t*)>(std::move(cb));
             lv_obj_add_event_cb(obj, eventTrampoline, code, cbPtr);
@@ -116,23 +159,23 @@ namespace ui
     };
 
     
-    class Widget : public LvObject<Widget, lv_obj_create> {
+    class Widget : public object<Widget, lv_obj_create> {
     public:
-        Widget(lv_obj_t *parent) : LvObject(parent) {}
+        Widget(lv_obj_t *parent) : object(parent) {}
     };
 
-    class Image : public LvObject<Image, lv_img_create> {
+    class Image : public object<Image, lv_img_create> {
     public:
-        Image(lv_obj_t *parent) : LvObject(parent) {}
+        Image(lv_obj_t *parent) : object(parent) {}
         Image &setSrc(std::string_view src) {
             lv_img_set_src(obj, src.data());
             return static_cast<Image&>(*this);
         }
     };
 
-    class TextBox : public LvObject<TextBox, lv_label_create> {
+    class TextBox : public object<TextBox, lv_label_create> {
     public:
-        TextBox(lv_obj_t *parent) : LvObject(parent) {}
+        TextBox(lv_obj_t *parent) : object(parent) {}
         TextBox &setText(std::string_view text) {
             lv_label_set_text(obj, text.data());
             lv_obj_set_height(obj, LV_SIZE_CONTENT);
@@ -169,9 +212,9 @@ namespace ui
         }
     };
 
-    class Button : public LvObject<Button, lv_button_create> {
+    class Button : public object<Button, lv_button_create> {
     public:
-        Button(lv_obj_t *parent) : LvObject(parent) {
+        Button(lv_obj_t *parent) : object(parent) {
             textbox.reset(new TextBox(this->raw()));
             textbox->align(LV_ALIGN_CENTER);
         }
@@ -184,9 +227,9 @@ namespace ui
         std::unique_ptr<TextBox> textbox;
     };
 
-    class ButtonMatrix : public LvObject<ButtonMatrix, lv_buttonmatrix_create> {
+    class ButtonMatrix : public object<ButtonMatrix, lv_buttonmatrix_create> {
     public:
-        ButtonMatrix(lv_obj_t *parent) : LvObject(parent) {}
+        ButtonMatrix(lv_obj_t *parent) : object(parent) {}
 
         ButtonMatrix &setMap(const char * const map[]) {
             lv_buttonmatrix_set_map(obj, map);
@@ -204,34 +247,32 @@ namespace ui
         }
     };
 
-    class Menu : public LvObject<Menu, lv_menu_create> {
+    class SimpleItem : public Button {
+        public:
+        SimpleItem(lv_obj_t *parent) : Button(parent){}
+
+    };
+
+    class Menu : public object<Menu, lv_obj_create> {
     public:
-        Menu(lv_obj_t *parent) : LvObject(parent) {
-            mainPage = lv_menu_page_create(obj, NULL);
+        Menu(lv_obj_t *parent) : object(parent) {
+            setFlexFlow(LV_FLEX_FLOW_COLUMN);
+            setFlexAlign(LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+            setPadRight(0).setPadLeft(0);
+            setScrollEnable(true);
         }
 
-        Menu &append(const char *item) {
-            containers.emplace_back(lv_menu_cont_create(mainPage));
-            items.emplace_back(std::unique_ptr<TextBox>(new TextBox(containers.back())));
-            items.back()->setText(item);
-            return static_cast<Menu&>(*this);
-        }
-
-        Menu &enableRootBack(bool en) {
-            lv_menu_mode_root_back_button_t mode = en ? LV_MENU_ROOT_BACK_BUTTON_ENABLED :
-                LV_MENU_ROOT_BACK_BUTTON_DISABLED;
-            lv_menu_set_mode_root_back_button(obj, mode);
-            return static_cast<Menu&>(*this);
-        }
-
-        void create() {
-            lv_menu_set_page(obj, mainPage);
+        Button &appendTextItem(const char *text) {
+            auto item = std::unique_ptr<Button>(new Button(raw()));
+            item->textBox().setText(text).setTextColor(0x000000);
+            item->setSize(LV_PCT(90), LV_PCT(7)).setColumnPad(0).setBgColor(0xf68830).
+                setGradColor(0x43cece, LV_GRAD_DIR_RADIAL).setRadius(MENU_RADIUS);
+            items.emplace_back(std::move(item));
+            return static_cast<Button&>(*items.back().get());
         }
 
     private:
-        lv_obj_t *mainPage;
-        std::vector<lv_obj_t *> containers;
-        std::vector<std::unique_ptr<TextBox>> items;
+        std::vector<std::unique_ptr<Button>> items;
 
     };
 
@@ -254,6 +295,10 @@ namespace ui
 
         void resume() {
             lv_anim_resume(&anim);
+        }
+
+        void del() {
+            lv_anim_delete(anim.var, anim.exec_cb);
         }
 
         Animation& setTime(uint32_t time) {
@@ -291,6 +336,8 @@ namespace ui
             return *this;
         }
     };
+
+
 
 
 
