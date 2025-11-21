@@ -146,6 +146,14 @@ namespace ui
             RET_REF
         }
 
+        uint32_t getHeight() {
+            return lv_obj_get_height(obj);
+        }
+
+        uint32_t getWidth() {
+            return lv_obj_get_width(obj);
+        }
+
         void addEvent(std::function<void(lv_event_t*)> cb, lv_event_code_t code = LV_EVENT_ALL) {
             auto *cbPtr = new std::function<void(lv_event_t*)>(std::move(cb));
             lv_obj_add_event_cb(obj, eventTrampoline, code, cbPtr);

@@ -78,11 +78,27 @@ void LVGL::createMainScr()
     scrImg->center();
 }
 
+static void animCbBlkScr(void *var, int32_t v)
+{
+    lv_obj_set_style_bg_opa((lv_obj_t*)var, v, LV_PART_MAIN);
+}
+
 void LVGL::createDisplay()
 {
-    display.reset(new Image(actScr->raw()));
-    display->setSize(470, 840);
+    display.reset(new Image(scrImg->raw()));
+    display->setSize(470, 890);
     display->setSrc(ASSET_IMG_BLK_STARTUP_SCR).align(LV_ALIGN_CENTER, -13, 27).setRadius(10);
+    lv_obj_update_layout(lv_scr_act());
+    blkScr.reset(new Widget(display->raw()));
+    blkScr->setSize(LV_PCT(100),LV_PCT(95)).setBgColor(0).
+        setBorderOpa(0).setBgOpa(LV_OPA_0).setScrollEnable(false).
+        align(LV_ALIGN_BOTTOM_MID, 0, -20).hide();
+    blkScrAnim.setTime(100).setExec(blkScr->raw(), animCbBlkScr);
+    lv_obj_update_layout(lv_scr_act());
+    widgetScr.reset(new Widget(display->raw()));
+    widgetScr->setSize(LV_PCT(100), LV_PCT(80)).setBgOpa(LV_OPA_0).
+        setBorderOpa(LV_OPA_0).align(LV_ALIGN_BOTTOM_MID).
+            setScrollEnable(false);
 }
 
 Image &LVGL::getDisplay() noexcept
@@ -94,6 +110,27 @@ Widget &LVGL::getScreen() noexcept
 {
     return dynamic_cast<Widget&>(*actScr.get());
 }
+
+Widget &LVGL::getBlkScreen() noexcept
+{
+    return dynamic_cast<Widget&>(*blkScr.get());
+}
+
+Widget &LVGL::getWidgetScreen() noexcept
+{
+    return dynamic_cast<Widget&>(*widgetScr.get());
+}
+
+void LVGL::showBlkScr() 
+{
+    blkScrAnim.setValue(LV_OPA_0, LV_OPA_50).start();
+}
+
+void LVGL::hideBlkScr() 
+{
+    blkScrAnim.setValue(LV_OPA_50, LV_OPA_0).start();
+}
+
 
 void LVGL::handle()
 {

@@ -57,6 +57,7 @@ public:
         opaAnim.reset(new Animation);
     }
     void enter() override {
+        LVGL::instance().hideBlkScr();
         alignAnim->setTime(600).setValue(-ARROW_ANIM_RANGE, ARROW_ANIM_RANGE).
         setExec(swipeCardImg.get()->raw(), animCbAlign).start();
         opaAnim->setTime(600).setValue(LV_OPA_100, LV_OPA_0).
@@ -65,6 +66,8 @@ public:
     }
     void exit() override {
         swipeCardImg->hide();
+        LVGL::instance().getBlkScreen().show();
+        LVGL::instance().showBlkScr();
     }
     void handle(Events::TimeOut &ev) override {
 

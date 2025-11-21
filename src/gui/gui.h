@@ -20,18 +20,25 @@ namespace ui
         void handle();
         Image &getDisplay() noexcept;
         Widget &getScreen() noexcept;
+        Widget &getBlkScreen() noexcept;
+        Widget &getWidgetScreen() noexcept;
         void showStatusBar();
         void hideStatusBar();
+        void showBlkScr();
+        void hideBlkScr();
     private:
         LVGL() = default;
         std::unique_ptr<Image> display;
         std::unique_ptr<Widget> actScr;
+        std::unique_ptr<Widget> blkScr;
+        std::unique_ptr<Widget> widgetScr;
         std::unique_ptr<Image> scrImg;
         std::unique_ptr<StatusBar> statusBar;
         Timer lvTimer;
         void createMainScr();
         void createDisplay();
         void createStatusBar();
+        ui::Animation blkScrAnim;
     };
 }
 
