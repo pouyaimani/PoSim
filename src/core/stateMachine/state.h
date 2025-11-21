@@ -18,6 +18,7 @@ namespace StateMachine
     namespace Events {
         class Event;
         class TimeOut;
+        class Keypad;
     }
     class State {
     public:
@@ -42,6 +43,7 @@ namespace StateMachine
         uint32_t timeOut;
         InnerState innerState {InnerState::ENTRY};
         virtual void handle(Events::TimeOut &ev);
+        virtual void handle(Events::Keypad &ev);
         std::string name;
         virtual void enter();
         virtual void exit();
