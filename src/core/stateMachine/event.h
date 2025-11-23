@@ -66,6 +66,7 @@ namespace Events
         };
         Keypad() {}
         Key key;
+        std::string keyStr;
     private:
         void dispatchTo(StateShPtr state) override {
             passToState(*this, state);

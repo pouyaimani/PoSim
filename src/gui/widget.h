@@ -146,6 +146,18 @@ namespace ui
             RET_REF
         }
 
+        Derived& autoHeight(){
+            lv_obj_set_height(obj, LV_SIZE_CONTENT); RET_REF
+        }
+
+        Derived& autoWidth() {
+            lv_obj_set_width(obj, LV_SIZE_CONTENT); RET_REF
+        }
+
+        Derived& autoSize() {
+            autoHeight().autoWidth(); RET_REF
+        }
+
         uint32_t getHeight() {
             return lv_obj_get_height(obj);
         }
@@ -281,6 +293,45 @@ namespace ui
 
     private:
         std::vector<std::unique_ptr<Button>> items;
+
+    };
+
+    class TextArea : public object<TextArea, lv_textarea_create> {
+    public:
+        TextArea(lv_obj_t *parent) : object(parent) {
+            lv_obj_add_state(obj, LV_STATE_FOCUSED);
+            setBgColor(0).setBorderColor(0).
+                setBgOpa(LV_OPA_0).setBorderOpa(LV_OPA_100);
+            lv_obj_set_style_border_side(obj, (lv_border_side_t)(LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_RIGHT),
+                              LV_PART_MAIN); 
+        }
+
+        TextArea &addText(const char *text) {
+            lv_textarea_add_text(obj, text);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setText(const char *text) {
+            lv_textarea_set_text(obj, text);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setFont(const lv_font_t *font) {
+            lv_obj_set_style_text_font(obj, font, 0);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setTextColor(uint32_t color) {
+            lv_obj_set_style_text_color(obj, lv_color_hex(color), 0);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setTextAlign(lv_text_align_t align) {
+            lv_obj_set_style_text_align(obj, align, 0);
+            return static_cast<TextArea&>(*this);
+        }
+
+    private:
 
     };
 

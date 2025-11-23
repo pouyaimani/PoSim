@@ -98,6 +98,8 @@ void LVGL::createDisplay()
     widgetScr.reset(new Widget(display->raw()));
     widgetScr->setSize(LV_PCT(100), LV_PCT(80)).setBgOpa(LV_OPA_0).
         setBorderOpa(LV_OPA_0).align(LV_ALIGN_BOTTOM_MID).
+            setScrollEnable(false).setFlexFlow(LV_FLEX_FLOW_COLUMN).
+            setFlexAlign(LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER).
             setScrollEnable(false);
 }
 
@@ -130,7 +132,6 @@ void LVGL::hideBlkScr()
 {
     blkScrAnim.setValue(LV_OPA_50, LV_OPA_0).start();
 }
-
 
 void LVGL::handle()
 {

@@ -63,9 +63,11 @@ public:
         opaAnim->setTime(600).setValue(LV_OPA_100, LV_OPA_0).
             setExec(swipeCardImg.get()->raw(), animCbOpa);
         swipeCardImg->show();
+        swipeButton->show();
     }
     void exit() override {
         swipeCardImg->hide();
+        swipeButton->hide();
         LVGL::instance().getBlkScreen().show();
         LVGL::instance().showBlkScr();
     }

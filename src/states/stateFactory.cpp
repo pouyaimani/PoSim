@@ -2,6 +2,7 @@
 #include "startup.h"
 #include "idle.h"
 #include "cardHolder.h"
+#include "services/sale.h"
 
 std::shared_ptr<State> StateFactory::get(StateId id)
 {
@@ -20,6 +21,9 @@ std::shared_ptr<State> StateFactory::get(StateId id)
             break;
         case StateId::Cardholder:
             instances[id] = std::make_shared<CardHolder>(instances[StateId::Idle]);
+            break;
+        case StateId::ServiceSale:
+            instances[id] = std::make_shared<Sale>(instances[StateId::Cardholder]);
             break;
         default:
             return nullptr;

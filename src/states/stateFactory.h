@@ -10,7 +10,8 @@ using namespace StateMachine;
 enum class StateId {
     StartUp,
     Idle,
-    Cardholder
+    Cardholder,
+    ServiceSale
 };
 
 class StateFactory {

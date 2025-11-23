@@ -18,8 +18,7 @@ public:
              LVGL::instance().getWidgetScreen().getHeight()).center().setRadius(MENU_RADIUS).
             setBorderOpa(0).setBgOpa(0);
         menu->appendTextItem("Sale").addEvent([this](lv_event_t* e) {
-            PLOG_DEBUG << "Sale is chosen.";
-            Keypad::instance().show();
+            goTo(StateFactory::get(StateId::ServiceSale));
         }, LV_EVENT_CLICKED);
         menu->appendTextItem("Balance").addEvent([](lv_event_t* e) {
             PLOG_DEBUG << "Balance is chosen.";
@@ -42,6 +41,10 @@ public:
     }
     void handle(Events::TimeOut &ev) override {
 
+    }
+
+    void handle(Events::Keypad &ev) override {
+        PLOG_DEBUG << "key = " << (int)ev.key;
     }
 
 private:
