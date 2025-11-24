@@ -146,6 +146,26 @@ namespace ui
             RET_REF
         }
 
+        Derived& autoHeight(){
+            lv_obj_set_height(obj, LV_SIZE_CONTENT); RET_REF
+        }
+
+        Derived& autoWidth() {
+            lv_obj_set_width(obj, LV_SIZE_CONTENT); RET_REF
+        }
+
+        Derived& autoSize() {
+            autoHeight().autoWidth(); RET_REF
+        }
+
+        uint32_t getHeight() {
+            return lv_obj_get_height(obj);
+        }
+
+        uint32_t getWidth() {
+            return lv_obj_get_width(obj);
+        }
+
         void addEvent(std::function<void(lv_event_t*)> cb, lv_event_code_t code = LV_EVENT_ALL) {
             auto *cbPtr = new std::function<void(lv_event_t*)>(std::move(cb));
             lv_obj_add_event_cb(obj, eventTrampoline, code, cbPtr);
@@ -274,6 +294,125 @@ namespace ui
     private:
         std::vector<std::unique_ptr<Button>> items;
 
+    };
+
+    class TextArea : public object<TextArea, lv_textarea_create> {
+    public:
+        TextArea(lv_obj_t *parent) : object(parent) {
+            lv_obj_add_state(obj, LV_STATE_FOCUSED);
+            setBgColor(0).setBorderColor(0).
+                setBgOpa(LV_OPA_0).setBorderOpa(LV_OPA_100);
+            lv_obj_set_style_border_side(obj, (lv_border_side_t)(LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_RIGHT),
+                              LV_PART_MAIN); 
+        }
+
+        TextArea &addText(const char *text) {
+            lv_textarea_add_text(obj, text);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setText(const char *text) {
+            lv_textarea_set_text(obj, text);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setFont(const lv_font_t *font) {
+            lv_obj_set_style_text_font(obj, font, 0);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setTextColor(uint32_t color) {
+            lv_obj_set_style_text_color(obj, lv_color_hex(color), 0);
+            return static_cast<TextArea&>(*this);
+        }
+
+        TextArea &setTextAlign(lv_text_align_t align) {
+            lv_obj_set_style_text_align(obj, align, 0);
+            return static_cast<TextArea&>(*this);
+        }
+
+    private:
+
+    };
+
+    class RadioButton : public object<RadioButton, lv_checkbox_create> {
+    public:
+        RadioButton(lv_obj_t *parent) : object(parent) {
+            lv_style_init(&styleRadio);
+            lv_style_set_radius(&styleRadio, LV_RADIUS_CIRCLE);
+
+            lv_style_init(&styleRadioChk);
+            lv_style_set_bg_image_src(&styleRadioChk, NULL);
+            lv_style_set_bg_color(&styleRadioChk, lv_color_hex(0));
+
+            lv_obj_add_style(obj, &styleRadio, LV_PART_INDICATOR);
+            lv_obj_add_style(obj, &styleRadioChk, LV_PART_INDICATOR | LV_STATE_CHECKED);
+            addFlag(LV_OBJ_FLAG_EVENT_BUBBLE);
+        }
+
+        RadioButton &setText(const char *txt) {
+            lv_checkbox_set_text(obj, txt);
+            return static_cast<RadioButton&>(*this);
+        }
+
+        RadioButton &setChecked(bool state) {
+            if (state) {
+                lv_obj_add_state(obj, LV_STATE_CHECKED);
+            } else {
+                lv_obj_remove_state(obj, LV_STATE_CHECKED);
+            }
+            return static_cast<RadioButton&>(*this);
+        }
+
+    private:
+        lv_style_t styleRadio;
+        lv_style_t styleRadioChk;
+
+    };
+
+    class PasswordBox : public object<PasswordBox, lv_obj_create> {
+    public:
+        PasswordBox(int count, lv_obj_t *parent) : object(parent) {
+            setFlexFlow(LV_FLEX_FLOW_ROW);
+            setFlexAlign(LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+            setScrollEnable(false);
+            max = count;
+            for (int i = 0 ; i < max ; i++) {
+                items.emplace_back(std::make_unique<RadioButton>(raw()));
+                items.back()->setChecked(false).setText("");
+                auto rawChb = items.back()->raw();
+                lv_obj_set_style_bg_opa(rawChb, LV_OPA_0, LV_PART_INDICATOR);
+                lv_obj_set_style_bg_color(rawChb, lv_color_hex(0), LV_PART_INDICATOR);
+                lv_obj_set_style_size(rawChb, 60, 60, LV_PART_INDICATOR);
+                lv_obj_set_style_size(rawChb, 60, 60, LV_PART_KNOB);
+                lv_obj_set_style_border_color(rawChb, lv_color_hex(0), LV_PART_INDICATOR);
+            }
+        }
+
+        PasswordBox &addKey(char key) {
+            password.append(1, key);
+            auto idx = password.size() - 1;
+            items.at(idx)->setChecked(true);
+            return static_cast<PasswordBox&>(*this);
+        }
+
+        PasswordBox &popBack() {
+            if (!password.empty()) {
+                password.pop_back();
+            }
+            auto idx = password.size();
+            items.at(idx)->setChecked(true);
+            return static_cast<PasswordBox&>(*this);
+        }
+
+        const char *getPassword() {
+            return password.c_str();
+        }
+
+    private:
+        std::vector<std::unique_ptr<RadioButton>> items;
+        std::string password;
+        int max;
     };
 
     class Animation {

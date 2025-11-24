@@ -3,7 +3,7 @@
 #include "utility.h"
 #include "asset.h"
 
-#define STATUS_BAR_HEIGHT 42
+#define STATUS_BAR_HEIGHT 52
 
 using namespace ui;
 
@@ -11,7 +11,8 @@ StatusBar::StatusBar()
 {
     body.reset(new Widget(LVGL::instance().getDisplay().raw()));
     body->setSize(DISPLAY_WIDTH, STATUS_BAR_HEIGHT);
-    body->setBgOpa(LV_OPA_TRANSP).setBorderOpa(LV_OPA_TRANSP).setScrollEnable(false);
+    body->setBgOpa(LV_OPA_TRANSP).setBorderOpa(LV_OPA_TRANSP).
+        setScrollEnable(false).setPadTop(50);
 
     timeBox.reset(new TextBox(body->raw()));
     timeBox->setFont(&lv_font_montserrat_20);
