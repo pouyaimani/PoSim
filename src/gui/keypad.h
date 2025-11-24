@@ -46,6 +46,13 @@ namespace ui {
 
         Keypad& setMode(KeypadMode mode) {
             this->mode = mode;
+            if (mode == KeypadMode::HiddenPassword) {
+                textArea->hide();
+                passBox->show();
+            } else {
+                passBox->hide();
+                textArea->show();
+            }
             return *this;
         }
 
@@ -67,9 +74,9 @@ namespace ui {
                 .align(LV_ALIGN_BOTTOM_MID)
                 .setSize(parentWidth, parentHeight)
                 .setBgColor(0)
-                .setBorderOpa(LV_OPA_50)
+                .setBorderOpa(LV_OPA_0)
                 .setBorderColor(0)
-                .setBgOpa(LV_OPA_50);
+                .setBgOpa(LV_OPA_0);
 
             // Title box
             title = std::make_unique<TextBox>(raw());
@@ -91,6 +98,13 @@ namespace ui {
                     .setFont(&lv_font_montserrat_24)
                     .setTextColor(0)
                     .setTextAlign(LV_TEXT_ALIGN_CENTER);
+
+            // PasswordBox
+            passBox = std::make_unique<PasswordBox>(4, raw());
+            passBox->setBgOpa(LV_OPA_0)
+                    .setBorderOpa(LV_OPA_0)
+                    .setSize(LV_PCT(60), LV_PCT(15))
+                    .align(LV_ALIGN_TOP_MID, 0, 200);
 
             // Button matrix
             btnMat = std::make_unique<ButtonMatrix>(raw());
@@ -122,6 +136,8 @@ namespace ui {
             lv_obj_set_style_bg_color(btnMat->raw(), lv_color_hex(0xffffff), LV_PART_ITEMS);
             lv_obj_set_style_bg_opa(btnMat->raw(), 10, LV_PART_ITEMS);
 
+            setMode(KeypadMode::PlainNumeric);
+
             lv_obj_update_layout(lv_scr_act());
         }
 
@@ -129,6 +145,7 @@ namespace ui {
         ui::Animation slideUp;
         std::unique_ptr<ui::ButtonMatrix> btnMat;
         std::unique_ptr<ui::TextArea> textArea;
+        std::unique_ptr<ui::PasswordBox> passBox;
         std::unique_ptr<ui::TextBox> title;
         std::string text;
         KeypadMode mode = KeypadMode::PlainNumeric;
@@ -163,7 +180,16 @@ namespace ui {
         }
 
         void handlePassword(const std::string& key, int id) {
-        // mask with '*'
+            if (id == 9) { // clear
+                passBox->popBack();
+            } else if (id == 11) { // enter
+                    auto ev = std::make_unique<StateMachine::Events::Keypad>();
+                    ev->key = static_cast<StateMachine::Events::Keypad::Key>(id + 1);
+                    ev->keyStr = key;
+                    ev->dispatch();
+            } else {
+                passBox->addKey(key.back());
+            }
         }
 
         std::string formatAmount(const std::string& digits) {
