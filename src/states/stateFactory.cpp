@@ -23,7 +23,7 @@ std::shared_ptr<State> StateFactory::get(StateId id)
             instances[id] = std::make_shared<CardHolder>(instances[StateId::Idle]);
             break;
         case StateId::ServiceSale:
-            instances[id] = std::make_shared<Sale>(instances[StateId::Cardholder]);
+            instances[id] = std::make_shared<Sale::Service>(instances[StateId::Cardholder]);
             break;
         default:
             return nullptr;

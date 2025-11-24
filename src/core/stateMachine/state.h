@@ -9,6 +9,7 @@
 #define DEFINE_ALIASES \
     using StateShPtr = std::shared_ptr<State>;          \
     using EvUnqPtr = std::unique_ptr<Events::Event>;    \
+    using StateUqPtr = std::unique_ptr<State>;          \
     using StateWkPtr = std::weak_ptr<State>;            \
     using LockGuard = std::lock_guard<std::mutex>;      
 
@@ -20,7 +21,7 @@ namespace StateMachine
         class TimeOut;
         class Keypad;
     }
-    class State {
+    class State : public std::enable_shared_from_this<State> {
     public:
         DEFINE_ALIASES
         State(StateShPtr parent, const char *name);
@@ -52,9 +53,10 @@ namespace StateMachine
         void goTo(StateShPtr state);
         StateWkPtr parent;
 
-
     // DECLARE_HANDLER(TimeOutEvent)
 };
+
+using SubState = State;
 
 }
 #endif
