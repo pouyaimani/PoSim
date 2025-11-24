@@ -29,3 +29,8 @@ void State::handle(Events::TimeOut &ev)
 {
     PLOG_INFO << name << " state handle(Events::TimeOut &) method is not defined.";
 }
+
+void State::handle(Events::Keypad &ev)
+{
+    PLOG_INFO << name << " state handle(Events::Keypad &) method is not defined.";
+}

@@ -48,6 +48,36 @@ namespace Events
         }
     };
 
+    class Keypad : public Event {
+    public:
+        enum class Key {
+            KEY_1_ = 1,
+            KEY_2_,
+            KEY_3_,
+            KEY_4_,
+            KEY_5_,
+            KEY_6_,
+            KEY_7_,
+            KEY_8_,
+            KEY_9_,
+            KEY_CLEAR_,
+            KEY_0_,
+            KEY_ENTER_
+        };
+        Keypad() {}
+        Key key;
+        std::string keyStr;
+    private:
+        void dispatchTo(StateShPtr state) override {
+            passToState(*this, state);
+        }
+
+        Event * clone() override {
+            return new Keypad(*this);
+        }
+
+    };
+
 }
 
 }
