@@ -3,6 +3,7 @@
 
 #include "widget.h"
 #include "core/stateMachine/core.h"
+#include "core/timer/timer.h"
 
 namespace ui {
 
@@ -29,12 +30,16 @@ namespace ui {
 
         // Show/hide animations
         Keypad& show() {
+            Widget::show();
             slideUp.setValue(getHeight(), 0).start();
             return *this;
         }
 
         Keypad& hide() {
             slideUp.setValue(0, getHeight()).start();
+            Timer::singleShot(300, [this](){
+                Widget::hide();
+            });
             return *this;
         }
 
