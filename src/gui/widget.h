@@ -390,9 +390,11 @@ namespace ui
         }
 
         PasswordBox &addKey(char key) {
-            password.append(1, key);
-            auto idx = password.size() - 1;
-            items.at(idx)->setChecked(true);
+            if (password.size() < max) {
+                password.append(1, key);
+                auto idx = password.size() - 1;
+                items.at(idx)->setChecked(true);
+            }
             return static_cast<PasswordBox&>(*this);
         }
 
@@ -401,7 +403,7 @@ namespace ui
                 password.pop_back();
             }
             auto idx = password.size();
-            items.at(idx)->setChecked(true);
+            items.at(idx)->setChecked(false);
             return static_cast<PasswordBox&>(*this);
         }
 

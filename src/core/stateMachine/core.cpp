@@ -123,8 +123,8 @@ void Core::onEntry()
     PLOG_INFO << "Core::onEntry called.";
     if (auto state = currentState.lock()) {
         PLOG_INFO << "Core::onEntry() -> enter to " << state->getName() << " state.";
-        state->enter();
         state->innerState = State::InnerState::EVENT;
+        state->enter();
     }
 }
 
