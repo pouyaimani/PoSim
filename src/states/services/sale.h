@@ -57,7 +57,6 @@ public:
     }
 
     void enter() override {
-
         Keypad::instance().setTitle("Enter Amount")
             .setMode(Keypad::KeypadMode::AmountFormatted).show();
     }
@@ -69,13 +68,12 @@ public:
 
     void handle(Events::Keypad &ev) override {
         if (ev.key == Events::Keypad::Key::KEY_ENTER_) {
-            goTo(getPass);
+            goTo(SubState[SubStates::enterPass]);
         }
     }
 
 private:
     ui::Animation appearMenu;
-    StateShPtr getPass;
 };
 
 class Service : public State {

@@ -21,7 +21,6 @@ public:
             goTo(StateFactory::get(StateId::ServiceSale));
         }, LV_EVENT_CLICKED);
         menu->appendTextItem("Balance").addEvent([](lv_event_t* e) {
-            PLOG_DEBUG << "Balance is chosen.";
         }, LV_EVENT_CLICKED);;
         menu->hide();
     }
@@ -31,7 +30,6 @@ public:
     }
 
     void enter() override {
-        PLOG_DEBUG << "enter to Cardholder.";
         menu->setBgOpa(LV_OPA_0).show();
         appearMenu.setTime(600).setValue(LV_OPA_0, LV_OPA_0).
         setExec(menu->raw(), animCbOpa).start();
